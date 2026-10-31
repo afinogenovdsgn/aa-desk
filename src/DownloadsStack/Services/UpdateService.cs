@@ -101,11 +101,7 @@ internal sealed class UpdateService : INotifyPropertyChanged
             {
                 await using (var source = await Client.GetStreamAsync(setupUri))
                 await using (var destination = File.Create(pending)) await source.CopyToAsync(destination);
-                await using var file = File.OpenRead(pending);
-                var actual = Convert.ToHexString(await SHA256.HashDataAsync(file));
-                if (!actual.Equals(expected, StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidDataException("SHA-256 установщика не совпадает с опубликованной суммой.");
-                File.Move(pending, setup, true);
+                await VerifyAndMoveAsync(pending, setup, expected);
             }
             finally { if (File.Exists(pending)) File.Delete(pending); }
             Process.Start(new ProcessStartInfo(setup) { UseShellExecute = true });
@@ -122,6 +118,16 @@ internal sealed class UpdateService : INotifyPropertyChanged
     internal static bool IsNewerVersion(string? candidate, string current) =>
         Version.TryParse(candidate, out var available) && Version.TryParse(current, out var installed)
         && available > installed;
+
+    internal static async Task VerifyAndMoveAsync(string pending, string setup, string expected)
+    {
+        string actual;
+        await using (var file = File.OpenRead(pending))
+            actual = Convert.ToHexString(await SHA256.HashDataAsync(file));
+        if (!actual.Equals(expected, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("SHA-256 установщика не совпадает с опубликованной суммой.");
+        File.Move(pending, setup, true);
+    }
 
     internal static Uri AllowedAsset(string value)
     {

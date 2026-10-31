@@ -25,7 +25,7 @@ SIZES = [(16, 16), (24, 24), (32, 32), (40, 40), (48, 48), (64, 64), (256, 256)]
 def render(active=False):
     svg = SVG
     if active:
-        colors = {"#142630": "#5adbc5", "#f3faf8": "#142630", "#5adbc5": "#f3faf8"}
+        colors = {"#202020": "#7ed8f5", "#7ed8f5": "#202020"}
         svg = re.sub(r"#[0-9a-fA-F]{6}", lambda match: colors.get(match.group().lower(), match.group()), svg)
     data = cairosvg.svg2png(bytestring=svg.encode("utf-8"), output_width=512, output_height=512)
     return Image.open(BytesIO(data)).convert("RGBA").resize((256, 256), Image.Resampling.LANCZOS)

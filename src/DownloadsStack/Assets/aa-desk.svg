@@ -1,5 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AA Desk">
-  <rect x="2" y="2" width="60" height="60" rx="15" fill="#142630"/>
-  <path d="M10 44 21 18l11 26M14 35h14M32 44l11-26 11 26M36 35h14" fill="none" stroke="#f3faf8" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M16 52h32" fill="none" stroke="#5adbc5" stroke-width="5" stroke-linecap="round"/>
+  <rect x="3" y="3" width="58" height="58" rx="13" fill="#202020" stroke="#7ed8f5" stroke-width="3"/>
+  <path d="M18 46 32 17l14 29M23 37h18" fill="none" stroke="#7ed8f5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

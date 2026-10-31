@@ -2,6 +2,7 @@ using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using DownloadsStack.Localization;
 using DownloadsStack.Models;
@@ -16,6 +17,7 @@ public partial class SettingsWindow : Window
     private readonly UpdateService _updates;
     private string? _selection;
     private bool _busy;
+    private Button? _activeNav;
     // Dragging a slider walks through every value on the way; writing settings.json at each of them
     // would be a hundred files for one gesture. The flyout follows the thumb, the disk follows the pause.
     private readonly DispatcherTimer _sliderSave;
@@ -23,6 +25,7 @@ public partial class SettingsWindow : Window
     internal SettingsWindow(MainViewModel model, UpdateService? updates = null)
     {
         InitializeComponent(); _model = model; _updates = updates ?? new UpdateService(); DataContext = model;
+        _activeNav = GeneralNav;
         _updates.PropertyChanged += UpdatesChanged;
         RefreshUpdates();
         // Windows owns this answer, and Task Manager can change it behind the application's back.
@@ -50,10 +53,10 @@ public partial class SettingsWindow : Window
     private async Task ExecuteAsync(Func<Task<string?>> action)
     {
         if (_busy) return;
-        _busy = true; Actions.IsEnabled = false; Message.Text = "";
+        _busy = true; Actions.IsEnabled = false; SmartExplorerModule.IsEnabled = false; DownloadsModule.IsEnabled = false; Message.Text = "";
         try { _selection = await action(); SourcesChanged(null, new(NotifyCollectionChangedAction.Reset)); }
         catch (Exception ex) { Services.LocalLog.Write("Settings", ex); Message.Text = Loc.T("Settings_SaveFailed", ex.Message); }
-        finally { _busy = false; Actions.IsEnabled = true; }
+        finally { _busy = false; Actions.IsEnabled = true; SmartExplorerModule.IsEnabled = true; DownloadsModule.IsEnabled = true; }
     }
     private async void AddFolder(object sender, RoutedEventArgs e)
     {
@@ -133,13 +136,38 @@ public partial class SettingsWindow : Window
     private void UpdatesChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) => RefreshUpdates();
     private void RefreshUpdates()
     {
-        UpdateVersion.Text = Loc.T("Settings_Version", _updates.CurrentVersion);
+        UpdateVersion.Text = "· v" + _updates.CurrentVersion;
+        AboutVersion.Text = Loc.T("Settings_Version", _updates.CurrentVersion);
         UpdateStatus.Text = _updates.Status;
         CheckUpdatesButton.IsEnabled = !_updates.IsBusy;
         InstallUpdateButton.Visibility = _updates.HasUpdate ? Visibility.Visible : Visibility.Collapsed;
         InstallUpdateButton.IsEnabled = !_updates.IsBusy;
+        FooterUpdateButton.IsEnabled = !_updates.IsBusy;
+        FooterUpdateButton.Content = _updates.HasUpdate
+            ? Loc.T("Settings_InstallUpdate") + " · v" + _updates.AvailableVersion
+            : Loc.T("Settings_CheckUpdates");
     }
     private async void CheckUpdates(object sender, RoutedEventArgs e) => await _updates.CheckAsync();
     private async void InstallUpdate(object sender, RoutedEventArgs e) => await _updates.DownloadAndRunAsync();
+    private async void FooterUpdate(object sender, RoutedEventArgs e)
+    {
+        if (_updates.HasUpdate) await _updates.DownloadAndRunAsync();
+        else await _updates.CheckAsync();
+    }
+    private void ShowPage(StackPanel page, Button nav)
+    {
+        GeneralPage.Visibility = page == GeneralPage ? Visibility.Visible : Visibility.Collapsed;
+        SmartPage.Visibility = page == SmartPage ? Visibility.Visible : Visibility.Collapsed;
+        DownloadsPage.Visibility = page == DownloadsPage ? Visibility.Visible : Visibility.Collapsed;
+        AboutPage.Visibility = page == AboutPage ? Visibility.Visible : Visibility.Collapsed;
+        if (_activeNav is not null) _activeNav.Background = (Brush)FindResource("NavNormalBrush");
+        nav.Background = (Brush)FindResource("NavSelectedBrush");
+        _activeNav = nav;
+        SettingsScroll.ScrollToTop();
+    }
+    private void NavigateGeneral(object sender, RoutedEventArgs e) => ShowPage(GeneralPage, GeneralNav);
+    private void NavigateSmart(object sender, RoutedEventArgs e) => ShowPage(SmartPage, SmartNav);
+    private void NavigateDownloads(object sender, RoutedEventArgs e) => ShowPage(DownloadsPage, DownloadsNav);
+    private void NavigateAbout(object sender, RoutedEventArgs e) => ShowPage(AboutPage, AboutNav);
     private void Done(object sender, RoutedEventArgs e) => Close();
 }

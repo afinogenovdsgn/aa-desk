@@ -6,7 +6,7 @@ namespace DownloadsStack.Interop;
 
 internal static class NativeMethods
 {
-    internal const string AppId = "Vivoderin.DownloadsStack";
+    internal const string AppId = "AA.Desk";
     [DllImport("dwmapi.dll")] internal static extern int DwmSetWindowAttribute(nint hwnd, int attribute, ref int value, int size);
     internal static readonly Guid DownloadsId = new("374DE290-123F-4565-9164-39C4925E467B");
     internal static readonly Guid ShellItemId = new("43826D1E-E718-42EE-BC55-A1E261C37BFE");

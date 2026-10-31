@@ -1,5 +1,5 @@
 <Window x:Class="DownloadsStack.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:DownloadsStack.Controls" xmlns:loc="clr-namespace:DownloadsStack.Localization"
-        Title="Downloads Stack" Style="{StaticResource {x:Type Window}}" Background="Transparent" AllowsTransparency="True" Foreground="{StaticResource TextBrush}" Icon="Assets/app.ico" Width="392" Height="260" WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False">
+        Title="AA Desk" Style="{StaticResource {x:Type Window}}" Background="Transparent" AllowsTransparency="True" Foreground="{StaticResource TextBrush}" Icon="Assets/app.ico" Width="392" Height="260" WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False">
     <Window.Resources><BooleanToVisibilityConverter x:Key="BooleanVisibility"/></Window.Resources>
     <!-- The same 1/255 alpha as a row, over the whole panel: on a layered window Windows sends the mouse
          straight through a pixel with no alpha at all, so the padding and the gaps between rows were holes

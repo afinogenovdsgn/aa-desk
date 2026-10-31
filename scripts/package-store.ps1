@@ -2,10 +2,10 @@
 # invented here: both values must be copied verbatim from Partner Center after reserving the product name.
 [CmdletBinding()]
 param(
-    [ValidateNotNullOrEmpty()][string]$IdentityName = 'Vivoderin.DownloadsStack',
-    [ValidateNotNullOrEmpty()][string]$Publisher = 'CN=FBE5C2B6-BF2B-47A1-ABFA-F14472F4933F',
-    [ValidateNotNullOrEmpty()][string]$DisplayName = 'Downloads Stack',
-    [string]$PublisherDisplayName = 'Vivoderin',
+    [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$IdentityName,
+    [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$Publisher,
+    [ValidateNotNullOrEmpty()][string]$DisplayName = 'AA Desk',
+    [string]$PublisherDisplayName = 'AA',
     [switch]$SkipTests
 )
 
@@ -39,7 +39,7 @@ New-Item -ItemType Directory -Path $publishPath -Force | Out-Null
 dotnet publish $projectPath -c Release -r win-x64 --self-contained true -p:PublishTrimmed=false -o $publishPath
 if ($LASTEXITCODE -ne 0) { throw 'Publish failed.' }
 
-$executable = Join-Path $publishPath 'Downloads Stack.exe'
+$executable = Join-Path $publishPath 'AA Desk.exe'
 $uiCheck = Start-Process -FilePath $executable -ArgumentList '--check-ui' -WindowStyle Hidden -Wait -PassThru
 $uiCheckLog = Join-Path $publishPath 'ui-check.log'
 if ($uiCheck.ExitCode -ne 0) {
@@ -96,7 +96,7 @@ $makeAppx = Get-ChildItem -LiteralPath $kitsRoot -Directory -ErrorAction Silentl
     Select-Object -First 1
 if (-not $makeAppx) { throw 'MakeAppx.exe was not found. Install the Windows SDK.' }
 
-$msixPath = Join-Path $artifactsPath "DownloadsStack-$version-store-win-x64.msix"
+$msixPath = Join-Path $artifactsPath "AADesk-$version-store-win-x64.msix"
 if (Test-Path -LiteralPath $msixPath) { Remove-Item -LiteralPath $msixPath -Force }
 & $makeAppx pack /o /h SHA256 /d $publishPath /p $msixPath
 if ($LASTEXITCODE -ne 0) { throw 'MakeAppx failed.' }

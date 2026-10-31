@@ -12,7 +12,7 @@
   <Properties>
     <DisplayName>@@DISPLAY_NAME@@</DisplayName>
     <PublisherDisplayName>@@PUBLISHER_DISPLAY_NAME@@</PublisherDisplayName>
-    <Description>Recent files from the folders you choose, in the Windows tray.</Description>
+    <Description>AA Desk tray utilities.</Description>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -25,16 +25,16 @@
   </Dependencies>
 
   <Applications>
-    <Application Id="DownloadsStack" Executable="Downloads Stack.exe" EntryPoint="Windows.FullTrustApplication">
+    <Application Id="AADesk" Executable="AA Desk.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="@@DISPLAY_NAME@@"
-        Description="Recent files from the folders you choose, in the Windows tray."
+        Description="AA Desk tray utilities."
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png" />
       <Extensions>
-        <uap5:Extension Category="windows.startupTask" Executable="Downloads Stack.exe" EntryPoint="Windows.FullTrustApplication">
-          <uap5:StartupTask TaskId="DownloadsStackStartup" Enabled="false" DisplayName="@@DISPLAY_NAME@@" />
+        <uap5:Extension Category="windows.startupTask" Executable="AA Desk.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap5:StartupTask TaskId="AADeskStartup" Enabled="false" DisplayName="@@DISPLAY_NAME@@" />
         </uap5:Extension>
       </Extensions>
     </Application>

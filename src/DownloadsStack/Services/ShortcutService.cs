@@ -20,7 +20,7 @@ internal static class ShortcutService
             {
                 var executable = Environment.ProcessPath!;
                 var directory = Path.GetDirectoryName(executable)!;
-                var target = Path.Combine(directory, "Downloads Stack.lnk");
+                var target = Path.Combine(directory, "AA Desk.lnk");
                 // Rewriting on every launch costs a COM save and a disk write, and where the application
                 // is installed somewhere read-only it reported the same failure on every single start.
                 if (AlreadyPointsTo(target, executable)) { completion.SetResult(); return; }

@@ -22,6 +22,12 @@
                  than pushing Done off the bottom, which a long folder list or a long error message both do. -->
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="0,0,4,0"><!-- Clear of the scroll bar on the rare occasion it appears. -->
+                <TextBlock Style="{StaticResource GroupCaption}" Text="{Binding [Settings_Modules], Source={x:Static loc:Loc.Text}}"/>
+                <Border Background="{StaticResource CardBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="6" Padding="12">
+                    <StackPanel>
+                        <CheckBox x:Name="DownloadsModule" Content="{Binding [Module_Downloads], Source={x:Static loc:Loc.Text}}"
+                                  IsChecked="{Binding DownloadsEnabled, Mode=OneWay}" Checked="ModuleChanged" Unchecked="ModuleChanged"/>
+                        <StackPanel Margin="0,16,0,0" Visibility="{Binding IsChecked, ElementName=DownloadsModule, Converter={StaticResource BooleanVisibility}}">
                 <TextBlock Style="{StaticResource GroupCaption}" Text="{Binding [Settings_Heading], Source={x:Static loc:Loc.Text}}"/>
                 <Border MinHeight="54" Background="{StaticResource CardBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="6" Padding="3">
                     <ListBox x:Name="FolderList" MaxHeight="240" ScrollViewer.VerticalScrollBarVisibility="Auto" ItemsSource="{Binding Sources}" AutomationProperties.Name="{Binding [Settings_ListName], Source={x:Static loc:Loc.Text}}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -64,6 +70,21 @@
                               IsChecked="{Binding SortReversed, Mode=OneWay}" Checked="SortReverseChanged" Unchecked="SortReverseChanged"/>
                 </Grid>
                 <TextBlock Style="{StaticResource Hint}" Text="{Binding [Settings_SortHint], Source={x:Static loc:Loc.Text}}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{StaticResource CardBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,10,0,0">
+                    <StackPanel>
+                        <CheckBox x:Name="SmartExplorerModule" Content="{Binding [Module_SmartExplorer], Source={x:Static loc:Loc.Text}}"
+                                  IsChecked="{Binding SmartExplorerEnabled, Mode=OneWay}" Checked="ModuleChanged" Unchecked="ModuleChanged"/>
+                        <StackPanel Margin="0,12,0,0" Visibility="{Binding IsChecked, ElementName=SmartExplorerModule, Converter={StaticResource BooleanVisibility}}">
+                            <TextBlock Style="{StaticResource Hint}" Text="{Binding [Module_SmartExplorerHotkey], Source={x:Static loc:Loc.Text}}"/>
+                            <CheckBox x:Name="SmartExplorerFallback" Margin="2,12,2,0" Content="{Binding [Module_SmartExplorerFallback], Source={x:Static loc:Loc.Text}}"
+                                      IsChecked="{Binding SmartExplorerUseLastPath, Mode=OneWay}" Checked="FallbackChanged" Unchecked="FallbackChanged"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
 
                 <Border Style="{StaticResource GroupRule}"/>
 
@@ -105,6 +126,15 @@
                 <CheckBox x:Name="Hardware" Margin="2,15,2,0" Content="{Binding [Settings_Hardware], Source={x:Static loc:Loc.Text}}"
                           IsChecked="{Binding HardwareRendering, Mode=OneWay}" Checked="HardwareChanged" Unchecked="HardwareChanged"/>
                 <TextBlock Style="{StaticResource Hint}" Margin="30,5,2,0" Text="{Binding [Settings_HardwareHint], Source={x:Static loc:Loc.Text}}"/>
+
+                <Border Style="{StaticResource GroupRule}"/>
+                <TextBlock Style="{StaticResource GroupCaption}" Text="{Binding [Settings_Updates], Source={x:Static loc:Loc.Text}}"/>
+                <TextBlock x:Name="UpdateVersion" Margin="2,0,2,0"/>
+                <TextBlock x:Name="UpdateStatus" Style="{StaticResource Hint}"/>
+                <WrapPanel Margin="-3,8,-3,0">
+                    <Button x:Name="CheckUpdatesButton" Content="{Binding [Settings_CheckUpdates], Source={x:Static loc:Loc.Text}}" Click="CheckUpdates"/>
+                    <Button x:Name="InstallUpdateButton" Content="{Binding [Settings_InstallUpdate], Source={x:Static loc:Loc.Text}}" Click="InstallUpdate" Visibility="Collapsed"/>
+                </WrapPanel>
 
                 <!-- Damaged settings, an unwritable index or a failed shortcut had nowhere to be seen. -->
                 <TextBlock Text="{Binding Error}" TextWrapping="Wrap" Foreground="#FF99A4" Margin="2,14,2,0"

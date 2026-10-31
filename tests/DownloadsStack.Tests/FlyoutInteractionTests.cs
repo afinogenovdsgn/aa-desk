@@ -55,10 +55,11 @@ public class FlyoutInteractionTests
                 list.UpdateLayout();
                 Assert.Same(row, list.ItemContainerGenerator.ContainerFromIndex(0));
                 var trayMenu = window.CreateTrayMenu();
-                Assert.Equal(2, trayMenu.Items.Count);
+                Assert.Equal(3, trayMenu.Items.Count);
                 Assert.All(trayMenu.Items.OfType<MenuItem>(), command => Assert.IsType<Style>(command.Style));
                 Assert.Equal(Loc.T("Menu_Settings"), Assert.IsType<MenuItem>(trayMenu.Items[0]).Header);
-                Assert.Equal(Loc.T("Menu_Exit"), Assert.IsType<MenuItem>(trayMenu.Items[1]).Header);
+                Assert.Equal(Loc.T("Menu_OpenSmartPath"), Assert.IsType<MenuItem>(trayMenu.Items[1]).Header);
+                Assert.Equal(Loc.T("Menu_Exit"), Assert.IsType<MenuItem>(trayMenu.Items[2]).Header);
                 Assert.DoesNotContain(trayMenu.Items.OfType<Separator>(), _ => true);
                 Assert.Equal(System.Windows.Media.Color.FromRgb(0x20, 0x20, 0x20), ((System.Windows.Media.SolidColorBrush)trayMenu.Background).Color);
                 Assert.Equal(1000, ToolTipService.GetInitialShowDelay(row));

@@ -43,7 +43,7 @@ internal static class Program
         {
             LocalLog.Write("Initialization", ex);
             if (check) File.WriteAllText(reportPath, ex.ToString());
-            else MessageBox.Show(ex.GetBaseException().Message, "Downloads Stack", MessageBoxButton.OK, MessageBoxImage.Error);
+            else MessageBox.Show(ex.GetBaseException().Message, "AA Desk", MessageBoxButton.OK, MessageBoxImage.Error);
             return 1;
         }
     }

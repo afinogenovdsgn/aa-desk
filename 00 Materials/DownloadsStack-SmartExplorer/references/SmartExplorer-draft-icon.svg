@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="SmartExplorer: папка и стрелка пути">
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="#142630"/>
+  <path d="M10 26V22c0-2.2 1.8-4 4-4h11l5 6h20c2.2 0 4 1.8 4 4v17c0 2.2-1.8 4-4 4H14c-2.2 0-4-1.8-4-4V26Z" fill="#5ADBC5"/>
+  <path d="M19 37h24m-7-7 7 7-7 7" fill="none" stroke="#142630" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

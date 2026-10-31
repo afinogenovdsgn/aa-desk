@@ -29,6 +29,21 @@ public partial class MainWindow : Window
     private nint _displayMonitor;
     private double _displayScale = 1;
     private readonly MainViewModel _model;
+    internal UpdateService? Updates { get; set; }
+    internal bool SmartExplorerEnabled => _model.SmartExplorerEnabled;
+    internal bool SmartExplorerUseLastPath => _model.SmartExplorerUseLastPath;
+    internal event Action<bool> SmartExplorerEnabledChanged
+    {
+        add => _model.SmartExplorerEnabledChanged += value;
+        remove => _model.SmartExplorerEnabledChanged -= value;
+    }
+    internal event Action? OpenSmartPathRequested;
+    internal event Action<bool> SmartExplorerFallbackChanged
+    {
+        add => _model.SmartExplorerFallbackChanged += value;
+        remove => _model.SmartExplorerFallbackChanged -= value;
+    }
+    internal void ReportModuleError(string message) => _model.ReportError(message);
     private string? _selectedPath;
     private int _menuDepth;
     private ListBoxItem? _contextRow;
@@ -257,6 +272,12 @@ public partial class MainWindow : Window
         // Tearing the window down inside the click of a menu that is still closing is not safe.
         exit.Click += (_, _) => { CloseTrayMenu(); Dispatcher.BeginInvoke(RequestExit, DispatcherPriority.Background); };
         menu.Items.Add(settings);
+        if (SmartExplorerEnabled)
+        {
+            var smart = new MenuItem { Header = Loc.T("Menu_OpenSmartPath"), Style = (Style)FindResource("TrayMenuItem") };
+            smart.Click += (_, _) => { CloseTrayMenu(); OpenSmartPathRequested?.Invoke(); };
+            menu.Items.Add(smart);
+        }
         menu.Items.Add(exit);
         return menu;
     }
@@ -561,7 +582,7 @@ public partial class MainWindow : Window
         LocalLog.Write("Shell", ex);
         _model.ReportError(ex.Message);
         _ownedInteraction = true;
-        try { MessageBox.Show(this, ex.Message, "Downloads Stack", MessageBoxButton.OK, MessageBoxImage.Warning); }
+        try { MessageBox.Show(this, ex.Message, "AA Desk", MessageBoxButton.OK, MessageBoxImage.Warning); }
         finally { _ownedInteraction = false; }
     }
 
@@ -670,7 +691,7 @@ public partial class MainWindow : Window
         _ownedInteraction = true;
         try
         {
-            var settings = new SettingsWindow(_model);
+            var settings = new SettingsWindow(_model, Updates);
             if (overList) settings.Owner = this;
             else settings.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             _settingsWindow = settings;

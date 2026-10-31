@@ -27,7 +27,7 @@ internal sealed class SingleInstanceService : IDisposable
     public SingleInstanceService()
     {
         var sid = WindowsIdentity.GetCurrent().User!.Value;
-        _pipeName = "DownloadsStack." + sid;
+        _pipeName = "AADesk." + sid;
         _mutex = new Mutex(true, @"Local\" + _pipeName, out var created);
         IsPrimary = created;
     }

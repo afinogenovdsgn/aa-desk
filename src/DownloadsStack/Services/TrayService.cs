@@ -20,6 +20,7 @@ internal sealed class TrayService : IDisposable
     private const uint HasMessage = 0x01, HasIcon = 0x02, HasTip = 0x04;
     private readonly MainWindow _window;
     private readonly HwndSource _source;
+    internal HwndSource Source => _source;
     private readonly nint _image, _activeImage;
     private readonly uint _taskbarCreated;
     private Timer? _retry;
@@ -35,7 +36,7 @@ internal sealed class TrayService : IDisposable
         _taskbarCreated = NativeMethods.RegisterWindowMessage("TaskbarCreated");
         // A plain top-level window, never shown. It has to be top-level rather than message-only: the shell
         // announces its own restart by broadcasting, and a message-only window is not in that broadcast.
-        _source = new HwndSource(new HwndSourceParameters("Downloads Stack tray")
+        _source = new HwndSource(new HwndSourceParameters("AA Desk tray")
         {
             WindowStyle = unchecked((int)0x80000000), // WS_POPUP, without WS_VISIBLE.
             ExtendedWindowStyle = 0x00000080, // WS_EX_TOOLWINDOW: out of the taskbar and out of Alt+Tab.

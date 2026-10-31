@@ -28,8 +28,8 @@ public sealed class AutostartService
     /// knows this program by. Nothing shows this string to the user: Task Manager lists a startup entry
     /// by the description of the executable it names.
     /// </summary>
-    public const string ValueName = "DownloadsStack";
-    public const string StartupTaskId = "DownloadsStackStartup";
+    public const string ValueName = "AADesk";
+    public const string StartupTaskId = "AADeskStartup";
     private const string DefaultRunPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private const string DefaultApprovedPath = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
     private readonly string _runPath, _approvedPath;

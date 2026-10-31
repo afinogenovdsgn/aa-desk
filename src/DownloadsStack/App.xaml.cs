@@ -9,6 +9,8 @@ public partial class App : Application
 {
     private SingleInstanceService? _instance;
     private TrayService? _tray;
+    private SmartExplorerService? _smartExplorer;
+    internal UpdateService Updates { get; } = new();
 
     protected override async void OnStartup(StartupEventArgs e)
     {
@@ -16,7 +18,7 @@ public partial class App : Application
         DispatcherUnhandledException += (_, args) =>
         {
             LocalLog.Write("UI", args.Exception);
-            MessageBox.Show(args.Exception.Message, "Downloads Stack", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(args.Exception.Message, "AA Desk", MessageBoxButton.OK, MessageBoxImage.Warning);
             args.Handled = true;
         };
         try
@@ -41,6 +43,7 @@ public partial class App : Application
             // stays quiet.
             NativeMethods.RegisterApplicationRestart(AutostartService.Argument, 0);
             var window = new MainWindow();
+            window.Updates = Updates;
             MainWindow = window;
             _instance.Listen(command => Dispatcher.BeginInvoke(() =>
             {
@@ -53,6 +56,13 @@ public partial class App : Application
             await window.ApplyRenderModeAsync();
             _tray = new TrayService(window);
             await window.InitializeAsync();
+            _smartExplorer = new SmartExplorerService(_tray.Source, window.ReportModuleError);
+            _smartExplorer.UseLastPath = window.SmartExplorerUseLastPath;
+            _smartExplorer.SetEnabled(window.SmartExplorerEnabled);
+            window.SmartExplorerEnabledChanged += _smartExplorer.SetEnabled;
+            window.SmartExplorerFallbackChanged += enabled => _smartExplorer.UseLastPath = enabled;
+            window.OpenSmartPathRequested += _smartExplorer.Open;
+            _ = Updates.CheckIfDueAsync();
             if (e.Args.Contains("--show")) window.RestoreList(true);
             try { await ShortcutService.EnsureAsync(); }
             catch (Exception ex) { LocalLog.Write("Shortcut", ex); window.ReportError(Loc.T("Error_Shortcut", ex.Message)); }
@@ -65,13 +75,14 @@ public partial class App : Application
         catch (Exception ex)
         {
             LocalLog.Write("Startup", ex);
-            MessageBox.Show(ex.Message, "Downloads Stack", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(ex.Message, "AA Desk", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
+        _smartExplorer?.Dispose();
         _tray?.Dispose();
         _instance?.Dispose();
         base.OnExit(e);

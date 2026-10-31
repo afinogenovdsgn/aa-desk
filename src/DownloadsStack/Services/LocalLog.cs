@@ -5,7 +5,7 @@ namespace DownloadsStack.Services;
 internal static class LocalLog
 {
     private static readonly object Gate = new();
-    public static readonly string DataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DownloadsStack");
+    public static readonly string DataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AADesk");
     public static void Write(string operation, Exception exception)
     {
         lock (Gate)

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal">
+  <Bundle Name="AA Desk" Manufacturer="AA" Version="$(Version)"
+          UpgradeCode="BFA8D310-BE76-4401-B063-DA0BB2E4B1A6" IconSourceFile="$(IconFile)">
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication Theme="rtfLicense" LicenseFile="$(LicenseRtf)" LogoFile="$(LogoFile)" />
+    </BootstrapperApplication>
+    <Chain>
+      <MsiPackage SourceFile="$(MsiPath)" Compressed="yes" Visible="no" />
+    </Chain>
+  </Bundle>
+</Wix>

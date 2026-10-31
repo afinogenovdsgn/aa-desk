@@ -16,6 +16,8 @@ public sealed record SettingsData
 {
     [JsonRequired] public int SchemaVersion { get; init; } = 1;
     [JsonRequired] public List<FolderSource> Sources { get; init; } = [FolderSource.Downloads()];
+    // Optional so settings written by Downloads Stack remain readable if explicitly imported later.
+    public ModuleSettings Modules { get; init; } = new();
     /// <summary>
     /// Whether WPF may render through Direct3D. Not required in the file: a settings file written before
     /// this option existed means the same as a new one, which is the sparing renderer.
@@ -47,6 +49,13 @@ public sealed record SettingsData
     /// <summary>Turns the whole list end for end, whichever field it is ordered by.</summary>
     public bool SortReversed { get; init; }
     [JsonIgnore] public FileOrder Order => new(SortBy, SortReversed);
+}
+
+public sealed record ModuleSettings
+{
+    public bool Downloads { get; init; } = true;
+    public bool SmartExplorer { get; init; } = true;
+    public bool SmartExplorerUseLastPath { get; init; } = true;
 }
 
 /// <summary>What the list is sorted by. The first value is the order the application had before the choice existed.</summary>

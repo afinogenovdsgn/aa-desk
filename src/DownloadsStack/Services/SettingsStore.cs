@@ -19,7 +19,7 @@ public sealed class SettingsStore
             try
             {
                 var data = JsonSerializer.Deserialize<SettingsData>(File.ReadAllText(_path), AtomicJson.Options);
-                if (data is null || data.SchemaVersion != 1 || data.Sources is null ||
+                if (data is null || data.SchemaVersion != 1 || data.Sources is null || data.Modules is null ||
                     data.Sources.Any(s => s is null || string.IsNullOrWhiteSpace(s.Id) ||
                         (s.Kind != "downloads" && s.Kind != "directory") ||
                         (s.Kind == "directory" && (string.IsNullOrWhiteSpace(s.Path) || !Path.IsPathFullyQualified(s.Path)))) ||

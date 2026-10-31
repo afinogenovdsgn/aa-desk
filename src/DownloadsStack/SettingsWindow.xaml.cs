@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using DownloadsStack.Localization;
 using DownloadsStack.Models;
+using DownloadsStack.Services;
 using Microsoft.Win32;
 
 namespace DownloadsStack;
@@ -12,15 +13,18 @@ namespace DownloadsStack;
 public partial class SettingsWindow : Window
 {
     private readonly MainViewModel _model;
+    private readonly UpdateService _updates;
     private string? _selection;
     private bool _busy;
     // Dragging a slider walks through every value on the way; writing settings.json at each of them
     // would be a hundred files for one gesture. The flyout follows the thumb, the disk follows the pause.
     private readonly DispatcherTimer _sliderSave;
     private int? _pendingBackdrop, _pendingCount;
-    public SettingsWindow(MainViewModel model)
+    internal SettingsWindow(MainViewModel model, UpdateService? updates = null)
     {
-        InitializeComponent(); _model = model; DataContext = model;
+        InitializeComponent(); _model = model; _updates = updates ?? new UpdateService(); DataContext = model;
+        _updates.PropertyChanged += UpdatesChanged;
+        RefreshUpdates();
         // Windows owns this answer, and Task Manager can change it behind the application's back.
         Loaded += async (_, _) => await model.RefreshAutostartAsync();
         // Rounded corners and the dark non-client frame; the panel itself is painted opaque.
@@ -36,6 +40,7 @@ public partial class SettingsWindow : Window
         Closed += (_, _) =>
         {
             model.Sources.CollectionChanged -= SourcesChanged;
+            _updates.PropertyChanged -= UpdatesChanged;
             SaveSliders(); // Closing within the pause must still keep what the sliders were left at.
         };
         PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape) { Close(); e.Handled = true; } };
@@ -114,5 +119,27 @@ public partial class SettingsWindow : Window
         catch (Exception ex) { Services.LocalLog.Write("Settings", ex); Message.Text = Loc.T("Settings_SaveFailed", ex.Message); }
     }
     private void Retry(object sender, RoutedEventArgs e) => _model.Refresh();
+    private async void ModuleChanged(object sender, RoutedEventArgs e)
+    {
+        if (!IsLoaded || sender is not CheckBox box) return;
+        var module = box == DownloadsModule ? "downloads" : "smart-explorer";
+        await ExecuteAsync(async () => { await _model.SetModuleEnabledAsync(module, box.IsChecked == true); return _selection; });
+    }
+    private async void FallbackChanged(object sender, RoutedEventArgs e)
+    {
+        if (!IsLoaded) return;
+        await ExecuteAsync(async () => { await _model.SetSmartExplorerFallbackAsync(SmartExplorerFallback.IsChecked == true); return _selection; });
+    }
+    private void UpdatesChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) => RefreshUpdates();
+    private void RefreshUpdates()
+    {
+        UpdateVersion.Text = Loc.T("Settings_Version", _updates.CurrentVersion);
+        UpdateStatus.Text = _updates.Status;
+        CheckUpdatesButton.IsEnabled = !_updates.IsBusy;
+        InstallUpdateButton.Visibility = _updates.HasUpdate ? Visibility.Visible : Visibility.Collapsed;
+        InstallUpdateButton.IsEnabled = !_updates.IsBusy;
+    }
+    private async void CheckUpdates(object sender, RoutedEventArgs e) => await _updates.CheckAsync();
+    private async void InstallUpdate(object sender, RoutedEventArgs e) => await _updates.DownloadAndRunAsync();
     private void Done(object sender, RoutedEventArgs e) => Close();
 }

@@ -18,6 +18,11 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
     private readonly DownloadsService _downloads;
     private readonly IconService _icons = new();
     private SettingsData _configuration = new() { Sources = [] };
+    public bool DownloadsEnabled => _configuration.Modules.Downloads;
+    public bool SmartExplorerEnabled => _configuration.Modules.SmartExplorer;
+    public bool SmartExplorerUseLastPath => _configuration.Modules.SmartExplorerUseLastPath;
+    public event Action<bool>? SmartExplorerEnabledChanged;
+    public event Action<bool>? SmartExplorerFallbackChanged;
     private DownloadsSnapshot? _pending;
     private bool _dragging, _disposed;
     private string? _error;
@@ -184,7 +189,8 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
             Changed(nameof(SortBy)); Changed(nameof(SortReversed));
             _startupMessage = string.Join("\n", new[] { settings.Message, indexMessage }.Where(m => m is not null));
             UpdateError();
-            _downloads.ApplySources(_configuration.Sources, _configuration.Order);
+            _downloads.ApplySources(DownloadsEnabled ? _configuration.Sources : [], _configuration.Order);
+            Changed(nameof(DownloadsEnabled)); Changed(nameof(SmartExplorerEnabled)); Changed(nameof(SmartExplorerUseLastPath));
         }
         catch (Exception ex) { LocalLog.Write("Load data", ex); _startupMessage = Loc.T("Error_Settings", ex.Message); UpdateError(); }
     }
@@ -212,6 +218,40 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         Changed(nameof(HardwareRendering));
     }
     public void Refresh() => _downloads.Refresh();
+    public async Task SetModuleEnabledAsync(string module, bool enabled)
+    {
+        var modules = module switch
+        {
+            "downloads" => _configuration.Modules with { Downloads = enabled },
+            "smart-explorer" => _configuration.Modules with { SmartExplorer = enabled },
+            _ => throw new ArgumentOutOfRangeException(nameof(module))
+        };
+        if (modules == _configuration.Modules) return;
+        var next = _configuration with { Modules = modules };
+        await _settings.SaveAsync(next);
+        if (_disposed) return;
+        _configuration = next;
+        if (module == "downloads")
+        {
+            _downloads.ApplySources(enabled ? next.Sources : [], next.Order);
+            Changed(nameof(DownloadsEnabled));
+        }
+        else
+        {
+            Changed(nameof(SmartExplorerEnabled));
+            SmartExplorerEnabledChanged?.Invoke(enabled);
+        }
+    }
+    public async Task SetSmartExplorerFallbackAsync(bool enabled)
+    {
+        if (enabled == SmartExplorerUseLastPath) return;
+        var next = _configuration with { Modules = _configuration.Modules with { SmartExplorerUseLastPath = enabled } };
+        await _settings.SaveAsync(next);
+        if (_disposed) return;
+        _configuration = next;
+        Changed(nameof(SmartExplorerUseLastPath));
+        SmartExplorerFallbackChanged?.Invoke(enabled);
+    }
     public void ReportError(string message) { _reported = message; UpdateError(); }
     /// <summary>
     /// How many of the newest files can be on screen at once: never more than the user's chosen count, and
@@ -314,7 +354,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         var next = _configuration with { Sources = sources };
         await _settings.SaveAsync(next);
         if (_disposed) return;
-        _configuration = next; _downloads.ApplySources(sources, next.Order); Changed(nameof(CanAddDownloads));
+        _configuration = next; _downloads.ApplySources(DownloadsEnabled ? sources : [], next.Order); Changed(nameof(CanAddDownloads));
     }
     private void Changed([CallerMemberName] string? property = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     public void Dispose() { _disposed = true; _downloads.Updated -= Post; _downloads.Dispose(); _icons.Dispose(); }

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AA Desk — список загрузок</title>
+<style>
+  :root{color-scheme:dark;--ease:cubic-bezier(.22,1,.36,1);font-family:"Segoe UI Variable Text","Segoe UI",sans-serif}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:#181818;color:#ededed;font-size:13px}
+  button{font:inherit;cursor:pointer}
+  .stage{width:min(1000px,100%);margin:0 auto;padding:26px 28px 36px}
+  .title{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+  .title img{width:25px;height:25px}
+  h1{margin:0;font-size:21px;font-weight:600}
+  .intro{margin:0 0 20px;color:#aaa;font-size:12px}
+  .preview{position:relative;height:495px;overflow:hidden;border:1px solid #4b4b4b;border-radius:10px;background:radial-gradient(ellipse at 14% 15%,#5b7185 0%,transparent 40%),radial-gradient(ellipse at 80% 65%,#755b69 0%,transparent 44%),linear-gradient(145deg,#344957,#252c39 55%,#313137)}
+  .preview::before{content:"";position:absolute;inset:auto -5% -30% -5%;height:62%;background:linear-gradient(145deg,transparent 16%,#1b2837 16% 40%,transparent 40%),linear-gradient(25deg,transparent 22%,#26333e 22% 58%,transparent 58%);opacity:.8;pointer-events:none}
+  .preview-label{position:absolute;top:13px;left:15px;color:#f3f3f3;font-size:11px;text-shadow:0 1px 2px #0009}
+  .flyout{position:absolute;right:27px;bottom:47px;width:345px;padding:9px}
+  .file-row{height:49px;display:flex;align-items:center;gap:11px;padding:0 9px}
+  .folder-action{width:100%;border:0;background:transparent;color:inherit;text-align:left}
+  .folder-action:focus-visible,.tray-button:focus-visible{outline:2px solid #78d8f4;outline-offset:2px}
+  .file-icon{position:relative;width:27px;height:31px;flex:none;display:grid;place-items:center;border:1px solid #ffffff9e;border-radius:4px;background:linear-gradient(#fefefe,#d9e3eb);box-shadow:0 2px 6px #0006;color:#38424b;font-size:8px;font-weight:700;letter-spacing:.02em;transform-origin:center;transition:transform .27s var(--ease)}
+  .file-icon:before{content:"";position:absolute;right:-1px;top:-1px;border-left:10px solid transparent;border-bottom:10px solid #bacad5}
+  .file-icon.folder{background:linear-gradient(#78d8f4,#4fa7c4);border-color:#b2edfa;color:#174d60}
+  .file-icon.folder:before,.file-icon.downloads:before{display:none}
+  .file-icon.downloads{background:#202b34;border-color:#72d2ee;color:#72d2ee}
+  .file-icon.downloads svg{width:20px;height:20px}
+  .file-row:hover .file-icon{transform:scale(1.16)}
+  .file-name{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:3px 8px;border-radius:6px;background:#111920bd;color:#bfc9ce;box-shadow:0 2px 8px #0004;transition:color .23s var(--ease)}
+  .file-row:hover .file-name{color:#fff}
+  .taskbar{position:absolute;left:0;right:0;bottom:0;height:38px;display:flex;justify-content:flex-end;align-items:center;gap:12px;padding:0 17px;background:#1d222ae0;border-top:1px solid #ffffff2d}
+  .tray-button{width:30px;height:30px;padding:4px;border:0;border-radius:5px;background:transparent}
+  .tray-button:hover{background:#ffffff20}
+  .tray-button img{width:100%;height:100%}
+  .clock{font-size:11px;color:#e0e0e0}
+  .notice{position:absolute;left:15px;bottom:53px;max-width:270px;padding:8px 11px;border:1px solid #8194a0;border-radius:7px;background:#222b34e8;color:#e9f4fa;font-size:11px;opacity:0;transform:translateY(5px);pointer-events:none;transition:opacity .2s var(--ease),transform .2s var(--ease)}
+  .notice.show{opacity:1;transform:translateY(0)}
+  @media(max-width:650px){.stage{padding:15px}.preview{height:450px}.flyout{right:9px;width:min(345px,calc(100% - 18px))}}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:0ms!important}}
+</style>
+</head>
+<body>
+<main class="stage">
+  <div class="title"><img src="src/DownloadsStack/Assets/app.png" alt=""><h1>Список загрузок</h1></div>
+  <p class="intro">Нынешнее расположение файлов сохранено. Добавлена только строка перехода в папку «Загрузки»; при наведении значок увеличивается, а имя светлеет.</p>
+  <div class="preview">
+    <span class="preview-label">Предпросмотр выпадающего списка</span>
+    <div class="flyout" id="flyout">
+      <button class="file-row folder-action" type="button" id="open-downloads"><span class="file-icon downloads" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5v9m-3-3 3 3 3-3M3 12.5v4h14v-4"/></svg></span><span class="file-name">Перейти в папку загрузки</span></button>
+      <div class="file-row"><span class="file-icon folder" aria-hidden="true">▱</span><span class="file-name">Проект AA Desk</span></div>
+      <div class="file-row"><span class="file-icon" aria-hidden="true">JPG</span><span class="file-name">IMG_5326.JPG</span></div>
+      <div class="file-row"><span class="file-icon" aria-hidden="true">CSV</span><span class="file-name">MSR-201705.csv</span></div>
+      <div class="file-row"><span class="file-icon" aria-hidden="true">PDF</span><span class="file-name">Счёт_октябрь.pdf</span></div>
+      <div class="file-row"><span class="file-icon" aria-hidden="true">PNG</span><span class="file-name">reference.png</span></div>
+      <div class="file-row"><span class="file-icon" aria-hidden="true">TXT</span><span class="file-name">notes.txt</span></div>
+    </div>
+    <div class="notice" id="notice" role="status">В приложении откроется стандартная папка «Загрузки».</div>
+    <div class="taskbar"><button class="tray-button" type="button" id="tray" aria-label="Показать или скрыть список загрузок" aria-expanded="true"><img src="src/DownloadsStack/Assets/downloads-tray.svg" alt=""></button><span class="clock">12:30</span></div>
+  </div>
+</main>
+<script>
+  const flyout=document.querySelector('#flyout');
+  const tray=document.querySelector('#tray');
+  tray.addEventListener('click',()=>{
+    const visible=flyout.style.display!=='none';
+    flyout.style.display=visible?'none':'';
+    tray.setAttribute('aria-expanded',String(!visible));
+  });
+  document.querySelector('#open-downloads').addEventListener('click',()=>{
+    const notice=document.querySelector('#notice');
+    notice.classList.add('show');
+    clearTimeout(notice.timer);
+    notice.timer=setTimeout(()=>notice.classList.remove('show'),2200);
+  });
+</script>
+</body>
+</html>

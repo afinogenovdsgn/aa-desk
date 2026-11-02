@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AA Desk — роли иконок</title>
+<style>
+  :root{color-scheme:dark;font-family:"Segoe UI Variable Text","Segoe UI",sans-serif;color:#e8e8e8;background:#202020}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;padding:32px}
+  main{width:min(720px,100%)}
+  h1{margin:0 0 8px;font-size:23px;font-weight:600}
+  p{margin:0 0 24px;color:#a7a7a7;font-size:13px}
+  .roles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .role{min-height:155px;padding:20px;border:1px solid #414141;border-radius:10px;background:#292929}
+  .role h2{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#9eb7bf;font-weight:500;margin:0 0 17px}
+  .role-content{display:flex;align-items:center;gap:18px}
+  .role img,.role svg{width:52px;height:52px;flex:none}
+  .role strong{display:block;font-size:13px;font-weight:600}
+  .role small{display:block;color:#a2a2a2;font-size:11px;margin-top:5px;line-height:1.45}
+  .taskbar{margin-top:18px;height:54px;padding:0 15px;display:flex;align-items:center;justify-content:flex-end;gap:16px;border:1px solid #414141;border-radius:8px;background:#2d2d2d}
+  .taskbar svg{width:21px;height:21px}
+  .taskbar time{font-size:11px;color:#bdbdbd}
+  @media(max-width:540px){.roles{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Две роли иконок</h1>
+  <p>Знак AA Desk остаётся у приложения и установщика. Значок списка загрузок появляется в системном трее.</p>
+  <div class="roles">
+    <section class="role"><h2>Приложение</h2><div class="role-content"><img src="src/DownloadsStack/Assets/app.png" alt="Знак AA Desk"><div><strong>AA Desk</strong><small>Окно, EXE, ярлык и установщик</small></div></div></section>
+    <section class="role"><h2>Системный трей</h2><div class="role-content"><img src="src/DownloadsStack/Assets/downloads-tray.svg" alt="Белая иконка загрузок без рамки"><div><strong>Список загрузок</strong><small>Белая стрелка и лоток без обводки и подложки</small></div></div></section>
+  </div>
+  <div class="taskbar" aria-label="Пример значка в трее"><img src="src/DownloadsStack/Assets/downloads-tray.svg" alt="Значок списка загрузок в трее" style="width:21px;height:21px"><time>12:30</time></div>
+</main>
+</body>
+</html>

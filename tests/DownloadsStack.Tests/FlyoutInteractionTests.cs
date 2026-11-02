@@ -303,14 +303,15 @@ public class FlyoutInteractionTests
                     });
                 window.RestoreList(false);
                 var list = (ListBox)window.FindName("FileList");
-                // 20 DIP of padding and 50 DIP a row: a count the monitor can take is the count on screen.
+                // 20 DIP of padding, one Downloads shortcut and 50 DIP for each file row.
                 Assert.Equal(SettingsData.DefaultMaxVisibleItems, model.MaxVisibleItems);
+                Assert.NotNull(window.FindName("DownloadsShortcut"));
                 Assert.Equal(5, list.Items.Count); // Fewer files than rows asked for shows all of them.
-                Assert.Equal(270, window.Height);
+                Assert.Equal(320, window.Height);
                 // Moving the slider lays the flyout out again without a single file changing.
                 model.PreviewMaxVisibleItems(2);
                 Assert.Equal(2, list.Items.Count);
-                Assert.Equal(120, window.Height);
+                Assert.Equal(170, window.Height);
                 // The newest file stays at the bottom, nearest the tray, whatever is cut from the top.
                 Assert.Equal("file1.txt", ((DownloadItem)list.Items[^1]).Name);
                 model.PreviewMaxVisibleItems(SettingsData.MaxVisibleItemsLimit);

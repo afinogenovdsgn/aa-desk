@@ -7,7 +7,21 @@
     <Border x:Name="FlyoutSurface" Background="#01000000" Padding="10" RenderTransformOrigin="0.5,1" Opacity="0">
         <Border.RenderTransform><TransformGroup><ScaleTransform x:Name="FlyoutScale"/><TranslateTransform x:Name="FlyoutOffset"/></TransformGroup></Border.RenderTransform>
         <Grid>
-            <ListBox x:Name="FileList" AutomationProperties.Name="{Binding [List_Name], Source={x:Static loc:Loc.Text}}" FocusVisualStyle="{x:Null}"
+            <Grid.RowDefinitions><RowDefinition Height="50"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+            <Button x:Name="DownloadsShortcut" Grid.Row="0" Height="46" Margin="0,2" Padding="0" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch"
+                    Click="OpenDownloadsFolder" MouseEnter="DownloadsShortcutEnter" MouseLeave="DownloadsShortcutLeave"
+                    AutomationProperties.Name="{Binding [List_OpenDownloads], Source={x:Static loc:Loc.Text}}">
+                <Button.Template><ControlTemplate TargetType="Button"><Border Background="#01000000" CornerRadius="9"><ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="38"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Image x:Name="DownloadsShortcutIcon" Source="Assets/tray.ico" Width="24" Height="24" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                        <Image.RenderTransform><TransformGroup><ScaleTransform/><TranslateTransform/></TransformGroup></Image.RenderTransform>
+                    </Image>
+                    <Border Grid.Column="1" Background="{Binding DataContext.BackdropBrush, RelativeSource={RelativeSource AncestorType=Window}}" CornerRadius="8" Padding="8,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <TextBlock x:Name="DownloadsShortcutLabel" Text="{Binding [List_OpenDownloads], Source={x:Static loc:Loc.Text}}" FontSize="13" Foreground="#C0C7CA"/>
+                    </Border>
+                </Grid>
+            </Button>
+            <ListBox x:Name="FileList" Grid.Row="1" AutomationProperties.Name="{Binding [List_Name], Source={x:Static loc:Loc.Text}}" FocusVisualStyle="{x:Null}"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled"
                      PreviewMouseLeftButtonDown="OnMouseDown" PreviewMouseLeftButtonUp="OnMouseUp" PreviewMouseMove="OnMouseMove" PreviewMouseRightButtonDown="OnRightPress" PreviewMouseRightButtonUp="OnRightClick"
                      PreviewMouseDown="OnMiddlePress" PreviewMouseUp="OnMiddleRelease">
@@ -40,14 +54,14 @@
                         <Border.Effect><BlurEffect Radius="6" RenderingBias="Quality"/></Border.Effect>
                     </Border>
                     </Canvas>
-                    <controls:FileNameText x:Name="FileLabel" Margin="8,0" FileName="{Binding Name}" FontSize="13" Foreground="#FAFAFC" VerticalAlignment="Center">
+                    <controls:FileNameText x:Name="FileLabel" Margin="8,0" FileName="{Binding Name}" FontSize="13" Foreground="#C0C7CA" VerticalAlignment="Center">
                         <controls:FileNameText.Effect><DropShadowEffect Color="Black" BlurRadius="3" ShadowDepth="1" Opacity="0.85"/></controls:FileNameText.Effect>
                     </controls:FileNameText>
                     </Grid>
                 </Grid>
                 </DataTemplate></ListBox.ItemTemplate>
             </ListBox>
-            <TextBlock Text="{Binding EmptyText}" TextWrapping="Wrap" TextAlignment="Center" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16" Visibility="{Binding IsEmpty, Converter={StaticResource BooleanVisibility}}"/>
+            <TextBlock Grid.Row="1" Text="{Binding EmptyText}" TextWrapping="Wrap" TextAlignment="Center" Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="16" Visibility="{Binding IsEmpty, Converter={StaticResource BooleanVisibility}}"/>
         </Grid>
     </Border>
 </Window>

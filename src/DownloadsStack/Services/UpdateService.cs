@@ -9,6 +9,8 @@ using System.Text.Json.Serialization;
 
 namespace DownloadsStack.Services;
 
+internal enum UpdateCheckResult { Unknown, Checking, NoRelease, Current, Available, Error }
+
 /// <summary>Checks the AA Desk GitHub release, caches the result, and verifies setup before running it.</summary>
 internal sealed class UpdateService : INotifyPropertyChanged
 {
@@ -19,6 +21,7 @@ internal sealed class UpdateService : INotifyPropertyChanged
     private UpdateSnapshot _snapshot;
     private bool _busy;
     private string _status = "";
+    private UpdateCheckResult _result;
 
     internal UpdateService()
     {
@@ -30,6 +33,7 @@ internal sealed class UpdateService : INotifyPropertyChanged
     public string CurrentVersion => typeof(UpdateService).Assembly.GetName().Version is { } version
         ? $"{version.Major}.{version.Minor}.{version.Build}" : "0.1.0";
     public string Status { get => _status; private set { _status = value; Changed(nameof(Status)); } }
+    public UpdateCheckResult Result { get => _result; private set { _result = value; Changed(nameof(Result)); } }
     public bool IsBusy { get => _busy; private set { _busy = value; Changed(nameof(IsBusy)); } }
     public bool HasUpdate => IsNewerVersion(_snapshot.Version, CurrentVersion)
         && _snapshot.SetupUrl is not null && _snapshot.HashUrl is not null;
@@ -44,6 +48,7 @@ internal sealed class UpdateService : INotifyPropertyChanged
     {
         if (IsBusy) return;
         IsBusy = true;
+        Result = UpdateCheckResult.Checking;
         Status = "Проверка обновлений…";
         try
         {
@@ -52,6 +57,7 @@ internal sealed class UpdateService : INotifyPropertyChanged
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
                 _snapshot = new(DateTimeOffset.UtcNow, null, null, null, null);
+                Result = UpdateCheckResult.NoRelease;
                 Status = "Опубликованных релизов пока нет.";
             }
             else
@@ -74,6 +80,7 @@ internal sealed class UpdateService : INotifyPropertyChanged
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or InvalidDataException or IOException)
         {
             LocalLog.Write("Check updates", ex);
+            Result = UpdateCheckResult.Error;
             Status = "Не удалось проверить обновления: " + ex.Message;
         }
         finally { IsBusy = false; }
@@ -137,10 +144,18 @@ internal sealed class UpdateService : INotifyPropertyChanged
             throw new InvalidDataException("Адрес файла релиза не принадлежит AA Desk.");
         return uri;
     }
-    private void UpdateStatus() => Status = HasUpdate
-        ? "Доступна версия " + _snapshot.Version
-        : _snapshot.Version is null ? "Опубликованных релизов пока нет."
-        : "Установлена последняя версия.";
+    private void UpdateStatus()
+    {
+        Result = HasUpdate ? UpdateCheckResult.Available
+            : _snapshot.CheckedAt == default ? UpdateCheckResult.Unknown
+            : _snapshot.Version is null ? UpdateCheckResult.NoRelease : UpdateCheckResult.Current;
+        Status = Result switch
+        {
+            UpdateCheckResult.Available => "Доступна версия " + _snapshot.Version,
+            UpdateCheckResult.Unknown or UpdateCheckResult.NoRelease => "Опубликованных релизов пока нет.",
+            _ => "Установлена последняя версия."
+        };
+    }
     private UpdateSnapshot ReadCache()
     {
         try { return File.Exists(_cachePath) ? JsonSerializer.Deserialize<UpdateSnapshot>(File.ReadAllText(_cachePath)) ?? new() : new(); }

@@ -1,8 +1,10 @@
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using DownloadsStack.Localization;
 using DownloadsStack.Models;
@@ -17,6 +19,7 @@ public partial class SettingsWindow : Window
     private readonly UpdateService _updates;
     private string? _selection;
     private bool _busy;
+    private bool _footerChecked;
     private Button? _activeNav;
     // Dragging a slider walks through every value on the way; writing settings.json at each of them
     // would be a hundred files for one gesture. The flyout follows the thumb, the disk follows the pause.
@@ -124,9 +127,10 @@ public partial class SettingsWindow : Window
     private void Retry(object sender, RoutedEventArgs e) => _model.Refresh();
     private async void ModuleChanged(object sender, RoutedEventArgs e)
     {
-        if (!IsLoaded || sender is not CheckBox box) return;
+        if (!IsLoaded || sender is not ToggleButton box) return;
         var module = box == DownloadsModule ? "downloads" : "smart-explorer";
         await ExecuteAsync(async () => { await _model.SetModuleEnabledAsync(module, box.IsChecked == true); return _selection; });
+        box.GetBindingExpression(ToggleButton.IsCheckedProperty)?.UpdateTarget();
     }
     private async void FallbackChanged(object sender, RoutedEventArgs e)
     {
@@ -136,7 +140,7 @@ public partial class SettingsWindow : Window
     private void UpdatesChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) => RefreshUpdates();
     private void RefreshUpdates()
     {
-        UpdateVersion.Text = "· v" + _updates.CurrentVersion;
+        UpdateVersion.Text = "v" + _updates.CurrentVersion;
         AboutVersion.Text = Loc.T("Settings_Version", _updates.CurrentVersion);
         UpdateStatus.Text = _updates.Status;
         CheckUpdatesButton.IsEnabled = !_updates.IsBusy;
@@ -145,14 +149,40 @@ public partial class SettingsWindow : Window
         FooterUpdateButton.IsEnabled = !_updates.IsBusy;
         FooterUpdateButton.Content = _updates.HasUpdate
             ? Loc.T("Settings_InstallUpdate") + " · v" + _updates.AvailableVersion
-            : Loc.T("Settings_CheckUpdates");
+            : _updates.IsBusy ? Loc.T("Settings_CheckingUpdates")
+            : !_footerChecked ? Loc.T("Settings_CheckUpdates")
+            : _updates.Result switch
+            {
+                UpdateCheckResult.Current => Loc.T("Settings_NoUpdate"),
+                UpdateCheckResult.NoRelease => Loc.T("Settings_NoRelease"),
+                UpdateCheckResult.Error => Loc.T("Settings_UpdateError"),
+                _ => Loc.T("Settings_CheckUpdates")
+            };
     }
-    private async void CheckUpdates(object sender, RoutedEventArgs e) => await _updates.CheckAsync();
+    private async void CheckUpdates(object sender, RoutedEventArgs e) { _footerChecked = true; await _updates.CheckAsync(); }
     private async void InstallUpdate(object sender, RoutedEventArgs e) => await _updates.DownloadAndRunAsync();
     private async void FooterUpdate(object sender, RoutedEventArgs e)
     {
+        _footerChecked = true;
         if (_updates.HasUpdate) await _updates.DownloadAndRunAsync();
         else await _updates.CheckAsync();
+    }
+    private void FooterUpdateEnter(object sender, MouseEventArgs e) => AnimateFooterColor(Color.FromRgb(116, 211, 238));
+    private void FooterUpdateLeave(object sender, MouseEventArgs e) => AnimateFooterColor(Color.FromRgb(189, 189, 189));
+    private void AnimateFooterColor(Color target)
+    {
+        if (FooterUpdateButton.Foreground is not SolidColorBrush brush || brush.IsFrozen)
+        {
+            brush = new SolidColorBrush(Color.FromRgb(189, 189, 189));
+            FooterUpdateButton.Foreground = brush;
+        }
+        if (!SystemParameters.ClientAreaAnimation) { brush.Color = target; return; }
+        brush.BeginAnimation(SolidColorBrush.ColorProperty, new ColorAnimation
+        {
+            To = target,
+            Duration = TimeSpan.FromMilliseconds(220),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+        });
     }
     private void ShowPage(StackPanel page, Button nav)
     {
@@ -160,10 +190,19 @@ public partial class SettingsWindow : Window
         SmartPage.Visibility = page == SmartPage ? Visibility.Visible : Visibility.Collapsed;
         DownloadsPage.Visibility = page == DownloadsPage ? Visibility.Visible : Visibility.Collapsed;
         AboutPage.Visibility = page == AboutPage ? Visibility.Visible : Visibility.Collapsed;
-        if (_activeNav is not null) _activeNav.Background = (Brush)FindResource("NavNormalBrush");
-        nav.Background = (Brush)FindResource("NavSelectedBrush");
+        if (_activeNav is not null) _activeNav.Tag = null;
+        nav.Tag = "Selected";
         _activeNav = nav;
         SettingsScroll.ScrollToTop();
+        if (SystemParameters.ClientAreaAnimation)
+        {
+            page.Opacity = 0;
+            page.RenderTransform = new TranslateTransform(0, 7);
+            var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+            page.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(230)) { EasingFunction = ease });
+            ((TranslateTransform)page.RenderTransform).BeginAnimation(TranslateTransform.YProperty,
+                new DoubleAnimation(0, TimeSpan.FromMilliseconds(280)) { EasingFunction = ease });
+        }
     }
     private void NavigateGeneral(object sender, RoutedEventArgs e) => ShowPage(GeneralPage, GeneralNav);
     private void NavigateSmart(object sender, RoutedEventArgs e) => ShowPage(SmartPage, SmartNav);

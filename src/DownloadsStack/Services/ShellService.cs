@@ -15,6 +15,13 @@ internal static class ShellService
         finally { Marshal.FreeCoTaskMem(memory); }
     }
 
+    public static void OpenDownloadsFolder()
+    {
+        var folder = GetDownloadsPath();
+        if (!Directory.Exists(folder)) throw new DirectoryNotFoundException(Loc.T("Error_DownloadsMissing"));
+        Process.Start(new ProcessStartInfo(folder) { UseShellExecute = true });
+    }
+
     public static void OpenFile(string path)
     {
         if (!File.Exists(path)) throw new FileNotFoundException(Loc.T("Error_FileMissing"), path);

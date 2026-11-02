@@ -443,8 +443,8 @@ public partial class MainWindow : Window
         // The user's count sets the ceiling; the monitor sets the hard limit. A short screen shows fewer
         // than was asked for rather than running the list off the top of the work area.
         var screenHeight = Math.Max(frameHeight, (info.Work.Bottom - info.Work.Top) / scale - 24);
-        var availableHeight = Math.Min(frameHeight + _model.MaxVisibleItems * rowHeight, screenHeight);
-        var capacity = Math.Max(0, (int)Math.Floor((availableHeight - frameHeight) / rowHeight));
+        var availableHeight = Math.Min(frameHeight + (_model.MaxVisibleItems + 1) * rowHeight, screenHeight);
+        var capacity = Math.Max(0, (int)Math.Floor((availableHeight - frameHeight - rowHeight) / rowHeight));
         // The model keeps the chosen order, leading file first. Take only what fits, then put that file at
         // the bottom, nearest the tray.
         var visibleItems = _model.Items.Take(capacity).Reverse().ToArray();
@@ -466,7 +466,7 @@ public partial class MainWindow : Window
         foreach (var item in visibleItems)
             if (rebuild || item.Icon is null || ReferenceEquals(item.Icon, _model.FallbackIcon)) _ = _model.LoadIconAsync(item);
         // The empty line needs its own room: a user who asked for one row still has to be able to read it.
-        Height = visibleItems.Length == 0 ? Math.Min(96, screenHeight) : frameHeight + visibleItems.Length * rowHeight;
+        Height = visibleItems.Length == 0 ? Math.Min(146, screenHeight) : frameHeight + (visibleItems.Length + 1) * rowHeight;
         var width = (int)Math.Round(Width * scale);
         var height = (int)Math.Round(Height * scale);
         var gap = (int)Math.Round(12 * scale);
@@ -611,17 +611,22 @@ public partial class MainWindow : Window
 
     private void RowMouseEnter(object sender, MouseEventArgs e)
     {
-        if (sender is ListBoxItem row) AnimateRowIcon(row, true);
+        if (sender is ListBoxItem row) { AnimateRowIcon(row, true); AnimateRowText(row, true); }
     }
 
     private void RowMouseLeave(object sender, MouseEventArgs e)
     {
-        if (sender is ListBoxItem row && !FileRowState.GetIsContextTarget(row)) AnimateRowIcon(row, false);
+        if (sender is ListBoxItem row && !FileRowState.GetIsContextTarget(row)) { AnimateRowIcon(row, false); AnimateRowText(row, false); }
     }
 
     private void AnimateRowIcon(ListBoxItem row, bool enlarged)
     {
-        if (FindVisual<Image>(row) is not { } image || image.RenderTransform is not TransformGroup transform) return;
+        if (FindVisual<Image>(row) is { } image) AnimateIcon(image, enlarged);
+    }
+
+    private void AnimateIcon(Image image, bool enlarged)
+    {
+        if (image.RenderTransform is not TransformGroup transform) return;
         if (transform.IsFrozen) { transform = transform.Clone(); image.RenderTransform = transform; }
         var scale = (ScaleTransform)transform.Children[0];
         var offset = (TranslateTransform)transform.Children[1];
@@ -641,6 +646,52 @@ public partial class MainWindow : Window
         offset.BeginAnimation(TranslateTransform.YProperty, Motion(enlarged ? -2 : 0, enlarged ? 150 : 120));
     }
 
+    private void AnimateRowText(ListBoxItem row, bool bright)
+    {
+        if (FindVisual<FileNameText>(row) is { } label) AnimateLabel(label, bright);
+    }
+
+    private void AnimateLabel(TextBlock label, bool bright)
+    {
+        var color = bright ? Color.FromRgb(250, 250, 252) : Color.FromRgb(192, 199, 202);
+        var brush = label.Foreground as SolidColorBrush;
+        if (brush is null || brush.IsFrozen)
+        {
+            brush = new SolidColorBrush(Color.FromRgb(192, 199, 202));
+            label.Foreground = brush;
+        }
+        if (!AnimationsEnabled)
+        {
+            brush.BeginAnimation(SolidColorBrush.ColorProperty, null);
+            brush.Color = color;
+            return;
+        }
+        brush.BeginAnimation(SolidColorBrush.ColorProperty, new ColorAnimation
+        {
+            To = color,
+            Duration = TimeSpan.FromMilliseconds(bright ? 180 : 140),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+        });
+    }
+
+    private void DownloadsShortcutEnter(object sender, MouseEventArgs e)
+    {
+        AnimateIcon(DownloadsShortcutIcon, true);
+        AnimateLabel(DownloadsShortcutLabel, true);
+    }
+
+    private void DownloadsShortcutLeave(object sender, MouseEventArgs e)
+    {
+        AnimateIcon(DownloadsShortcutIcon, false);
+        AnimateLabel(DownloadsShortcutLabel, false);
+    }
+
+    private void OpenDownloadsFolder(object sender, RoutedEventArgs e)
+    {
+        try { ShellService.OpenDownloadsFolder(); MinimizeList(); }
+        catch (Exception ex) { ShowError(ex); }
+    }
+
     private void OnRightClick(object sender, MouseButtonEventArgs e)
     {
         e.Handled = true;
@@ -650,7 +701,7 @@ public partial class MainWindow : Window
         FileList.SelectedItem = item;
         if (_contextRow is not null) FileRowState.SetIsContextTarget(_contextRow, false);
         _contextRow = FileList.ItemContainerGenerator.ContainerFromItem(item) as ListBoxItem;
-        if (_contextRow is not null) { FileRowState.SetIsContextTarget(_contextRow, true); AnimateRowIcon(_contextRow, true); }
+        if (_contextRow is not null) { FileRowState.SetIsContextTarget(_contextRow, true); AnimateRowIcon(_contextRow, true); AnimateRowText(_contextRow, true); }
         ++_menuDepth;
         ResetPathTooltips(false);
         Mouse.Capture(null);
@@ -675,6 +726,7 @@ public partial class MainWindow : Window
         {
             FileRowState.SetIsContextTarget(_contextRow, false);
             AnimateRowIcon(_contextRow, _contextRow.IsMouseOver);
+            AnimateRowText(_contextRow, _contextRow.IsMouseOver);
         }
         _contextRow = null;
         _menuDepth = Math.Max(0, _menuDepth - 1);

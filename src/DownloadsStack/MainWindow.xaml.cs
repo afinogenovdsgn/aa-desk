@@ -32,6 +32,12 @@ public partial class MainWindow : Window
     internal UpdateService? Updates { get; set; }
     internal bool SmartExplorerEnabled => _model.SmartExplorerEnabled;
     internal bool SmartExplorerUseLastPath => _model.SmartExplorerUseLastPath;
+    internal string SmartExplorerHotkey => _model.SmartExplorerHotkey;
+    internal event Func<string, bool> SmartExplorerHotkeyChanging
+    {
+        add => _model.SmartExplorerHotkeyChanging += value;
+        remove => _model.SmartExplorerHotkeyChanging -= value;
+    }
     internal event Action<bool> SmartExplorerEnabledChanged
     {
         add => _model.SmartExplorerEnabledChanged += value;

@@ -20,6 +20,7 @@ public partial class SettingsWindow : Window
     private string? _selection;
     private bool _busy;
     private bool _footerChecked;
+    private bool _capturingHotkey;
     private Button? _activeNav;
     // Dragging a slider walks through every value on the way; writing settings.json at each of them
     // would be a hundred files for one gesture. The flyout follows the thumb, the disk follows the pause.
@@ -49,7 +50,7 @@ public partial class SettingsWindow : Window
             _updates.PropertyChanged -= UpdatesChanged;
             SaveSliders(); // Closing within the pause must still keep what the sliders were left at.
         };
-        PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape) { Close(); e.Handled = true; } };
+        PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape && !_capturingHotkey) { Close(); e.Handled = true; } };
     }
     private void SourcesChanged(object? sender, NotifyCollectionChangedEventArgs e)
     { if (_selection is not null) FolderList.SelectedItem = _model.Sources.FirstOrDefault(s => s.Source.Id == _selection); }
@@ -128,6 +129,7 @@ public partial class SettingsWindow : Window
     private async void ModuleChanged(object sender, RoutedEventArgs e)
     {
         if (!IsLoaded || sender is not ToggleButton box) return;
+        AnimateModuleToggle(box);
         var module = box == DownloadsModule ? "downloads" : "smart-explorer";
         await ExecuteAsync(async () => { await _model.SetModuleEnabledAsync(module, box.IsChecked == true); return _selection; });
         box.GetBindingExpression(ToggleButton.IsCheckedProperty)?.UpdateTarget();
@@ -136,6 +138,59 @@ public partial class SettingsWindow : Window
     {
         if (!IsLoaded) return;
         await ExecuteAsync(async () => { await _model.SetSmartExplorerFallbackAsync(SmartExplorerFallback.IsChecked == true); return _selection; });
+    }
+    private static void AnimateModuleToggle(ToggleButton box)
+    {
+        if (!SystemParameters.ClientAreaAnimation) return;
+        box.ApplyTemplate();
+        if (box.Template.FindName("Thumb", box) is not System.Windows.Shapes.Ellipse thumb ||
+            box.Template.FindName("Track", box) is not Border track) return;
+        var on = box.IsChecked == true;
+        var movement = thumb.RenderTransform as TranslateTransform;
+        if (movement is null || movement.IsFrozen) { movement = new TranslateTransform(); thumb.RenderTransform = movement; }
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        movement.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(on ? 0 : 16, on ? 16 : 0, TimeSpan.FromMilliseconds(260)) { EasingFunction = ease });
+        var from = on ? Color.FromRgb(85, 93, 96) : Color.FromRgb(24, 136, 170);
+        var to = on ? Color.FromRgb(24, 136, 170) : Color.FromRgb(85, 93, 96);
+        var brush = new SolidColorBrush(from);
+        track.Background = brush;
+        brush.BeginAnimation(SolidColorBrush.ColorProperty, new ColorAnimation(from, to, TimeSpan.FromMilliseconds(220)) { EasingFunction = ease });
+    }
+    private void CaptureSmartHotkey(object sender, RoutedEventArgs e)
+    {
+        _capturingHotkey = true;
+        SmartHotkeyButton.Content = Loc.T("Settings_HotkeyCapture");
+        SmartHotkeyButton.Focus();
+    }
+    private void SmartHotkeyLostFocus(object sender, KeyboardFocusChangedEventArgs e)
+    {
+        if (_capturingHotkey) EndHotkeyCapture();
+    }
+    private async void SmartHotkeyKeyDown(object sender, KeyEventArgs e)
+    {
+        if (!_capturingHotkey) return;
+        e.Handled = true;
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        if (key == Key.Escape) { EndHotkeyCapture(); return; }
+        if (key is Key.LeftShift or Key.RightShift or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin) return;
+        var win = Keyboard.IsKeyDown(Key.LWin) || Keyboard.IsKeyDown(Key.RWin);
+        var ctrl = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+        var alt = Keyboard.Modifiers.HasFlag(ModifierKeys.Alt);
+        var shift = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+        if (!win && !ctrl && !alt) { SmartHotkeyButton.Content = Loc.T("Settings_HotkeyModifier"); return; }
+        var vk = KeyInterop.VirtualKeyFromKey(key);
+        var keyName = vk is >= 0x41 and <= 0x5A or >= 0x30 and <= 0x39 ? ((char)vk).ToString() :
+            vk is >= 0x70 and <= 0x7B ? "F" + (vk - 0x70 + 1) : null;
+        if (keyName is null) return;
+        var gesture = string.Join("+", new[] { win ? "Win" : null, ctrl ? "Ctrl" : null, alt ? "Alt" : null, shift ? "Shift" : null, keyName }.Where(p => p is not null));
+        EndHotkeyCapture();
+        await ExecuteAsync(async () => { await _model.SetSmartExplorerHotkeyAsync(gesture); return _selection; });
+        SmartHotkeyButton.Content = _model.SmartExplorerHotkey;
+    }
+    private void EndHotkeyCapture()
+    {
+        _capturingHotkey = false;
+        SmartHotkeyButton.Content = _model.SmartExplorerHotkey;
     }
     private void UpdatesChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) => RefreshUpdates();
     private void RefreshUpdates()

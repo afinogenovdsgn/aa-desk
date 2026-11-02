@@ -4,6 +4,10 @@
     <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="36" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/></shell:WindowChrome.WindowChrome>
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanVisibility"/>
+        <DrawingImage x:Key="BrandVector"><DrawingImage.Drawing><DrawingGroup>
+            <GeometryDrawing Brush="#202020"><GeometryDrawing.Geometry><RectangleGeometry Rect="0.7,0.7,14.6,14.6" RadiusX="3" RadiusY="3"/></GeometryDrawing.Geometry><GeometryDrawing.Pen><Pen Brush="#7ED8F5" Thickness="1.1"/></GeometryDrawing.Pen></GeometryDrawing>
+            <GeometryDrawing Geometry="M4.4,12.5 L8,3.5 11.6,12.5 M5.7,9.3 L10.3,9.3"><GeometryDrawing.Pen><Pen Brush="#7ED8F5" Thickness="1.45" StartLineCap="Round" EndLineCap="Round" LineJoin="Round"/></GeometryDrawing.Pen></GeometryDrawing>
+        </DrawingGroup></DrawingImage.Drawing></DrawingImage>
         <SolidColorBrush x:Key="NavSelectedBrush" Color="#164657"/>
         <SolidColorBrush x:Key="NavNormalBrush" Color="Transparent"/>
         <Style x:Key="NavButton" TargetType="Button">
@@ -24,17 +28,17 @@
             <Setter Property="Width" Value="43"/><Setter Property="Height" Value="28"/><Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToggleButton">
                 <Grid Width="38" Height="22">
-                    <Border x:Name="Track" Background="#555D60" BorderBrush="#70787B" BorderThickness="1" CornerRadius="11"/>
-                    <Ellipse x:Name="Thumb" Width="14" Height="14" Fill="White" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="3,0,0,0"/>
+                    <Border x:Name="Track" BorderBrush="#70787B" BorderThickness="1" CornerRadius="11"><Border.Background><SolidColorBrush Color="#555D60"/></Border.Background></Border>
+                    <Ellipse x:Name="Thumb" Width="14" Height="14" Fill="White" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="3,0,0,0"><Ellipse.RenderTransform><TranslateTransform/></Ellipse.RenderTransform></Ellipse>
                 </Grid>
                 <ControlTemplate.Triggers>
-                    <Trigger Property="IsChecked" Value="True"><Setter TargetName="Track" Property="Background" Value="#1888AA"/><Setter TargetName="Track" Property="BorderBrush" Value="#55C7E8"/><Setter TargetName="Thumb" Property="Margin" Value="19,0,0,0"/></Trigger>
-                    <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45"/></Trigger>
+                    <Trigger Property="IsChecked" Value="True"><Setter TargetName="Track" Property="Background" Value="#1888AA"/><Setter TargetName="Track" Property="BorderBrush" Value="#55C7E8"/><Setter TargetName="Thumb" Property="RenderTransform"><Setter.Value><TranslateTransform X="16"/></Setter.Value></Setter></Trigger>
+                    <Trigger Property="IsEnabled" Value="False"><Setter Property="Cursor" Value="Arrow"/></Trigger>
                 </ControlTemplate.Triggers>
             </ControlTemplate></Setter.Value></Setter>
         </Style>
-        <Style x:Key="InfoGlyph" TargetType="TextBlock">
-            <Setter Property="Text" Value="ⓘ"/><Setter Property="Foreground" Value="#999999"/><Setter Property="FontSize" Value="12"/><Setter Property="Cursor" Value="Help"/><Setter Property="Margin" Value="7,0,0,0"/><Setter Property="VerticalAlignment" Value="Center"/>
+        <Style x:Key="InfoGlyph" TargetType="Border">
+            <Setter Property="Width" Value="23"/><Setter Property="Height" Value="23"/><Setter Property="Background" Value="Transparent"/><Setter Property="Cursor" Value="Help"/><Setter Property="Margin" Value="5,0,0,0"/><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="ToolTipService.InitialShowDelay" Value="180"/>
         </Style>
         <Style x:Key="FooterLink" TargetType="Button">
             <Setter Property="Foreground" Value="#BDBDBD"/><Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="0"/><Setter Property="Cursor" Value="Hand"/>
@@ -55,7 +59,7 @@
             <Grid.RowDefinitions><RowDefinition Height="36"/><RowDefinition Height="*"/><RowDefinition Height="35"/></Grid.RowDefinitions>
             <Border Background="#303030" BorderBrush="#3B3B3B" BorderThickness="0,0,0,1">
                 <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="40"/></Grid.ColumnDefinitions>
-                    <Image Source="Assets/app.ico" Width="16" Height="16" Margin="12,0,9,0" VerticalAlignment="Center"/>
+                    <Image Source="{StaticResource BrandVector}" Width="16" Height="16" Margin="12,0,9,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock Grid.Column="1" Text="AA Desk" VerticalAlignment="Center" FontSize="12"/>
                     <Button Grid.Column="2" Content="×" FontSize="17" Padding="0" Margin="0" Background="Transparent" BorderThickness="0" Click="Done" shell:WindowChrome.IsHitTestVisibleInChrome="True" AutomationProperties.Name="{Binding [Settings_Close], Source={x:Static loc:Loc.Text}}"/>
                 </Grid>
@@ -65,7 +69,7 @@
                     <Grid><Grid.RowDefinitions><RowDefinition Height="104"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                         <Border BorderBrush="#3B3B3B" BorderThickness="0,0,0,1">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Image Source="Assets/app.ico" Width="28" Height="28" Margin="0,0,9,0"/>
+                                <Image Source="{StaticResource BrandVector}" Width="28" Height="28" Margin="0,0,9,0" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 <TextBlock Text="AA Desk" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
@@ -105,9 +109,9 @@
                                 <Border Style="{StaticResource Card}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Smart Explorer" VerticalAlignment="Center"/><ToggleButton x:Name="SmartExplorerModule" Grid.Column="1" Style="{StaticResource ModuleToggle}" IsChecked="{Binding SmartExplorerEnabled, Mode=OneWay}" Checked="ModuleChanged" Unchecked="ModuleChanged" AutomationProperties.Name="{Binding [Settings_EnableModule], Source={x:Static loc:Loc.Text}}"/></Grid></Border>
                                 <TextBlock Style="{StaticResource SectionLabel}" Text="{Binding [Page_Behavior], Source={x:Static loc:Loc.Text}}"/>
                                 <Border Style="{StaticResource Card}"><StackPanel>
-                                    <TextBlock Text="{Binding [Module_SmartExplorerHotkey], Source={x:Static loc:Loc.Text}}" TextWrapping="Wrap"/>
+                                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><StackPanel VerticalAlignment="Center"><TextBlock Text="{Binding [Settings_SmartHotkey], Source={x:Static loc:Loc.Text}}"/><TextBlock Text="{Binding [Settings_SmartHotkeyHint], Source={x:Static loc:Loc.Text}}" Style="{StaticResource Hint}"/></StackPanel><Button x:Name="SmartHotkeyButton" Grid.Column="1" Content="{Binding SmartExplorerHotkey}" Click="CaptureSmartHotkey" PreviewKeyDown="SmartHotkeyKeyDown" LostKeyboardFocus="SmartHotkeyLostFocus" MinWidth="145" Padding="10,6"/></Grid>
                                     <Border Background="#3B3B3B" Height="1" Margin="0,14"/>
-                                    <StackPanel Orientation="Horizontal"><CheckBox x:Name="SmartExplorerFallback" Content="{Binding [Module_SmartExplorerFallback], Source={x:Static loc:Loc.Text}}" IsChecked="{Binding SmartExplorerUseLastPath, Mode=OneWay}" Checked="FallbackChanged" Unchecked="FallbackChanged"/><TextBlock Style="{StaticResource InfoGlyph}" ToolTip="{Binding [Hint_SmartFallback], Source={x:Static loc:Loc.Text}}" ToolTipService.Placement="Right"/></StackPanel>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center"><CheckBox x:Name="SmartExplorerFallback" Content="{Binding [Module_SmartExplorerFallback], Source={x:Static loc:Loc.Text}}" IsChecked="{Binding SmartExplorerUseLastPath, Mode=OneWay}" Checked="FallbackChanged" Unchecked="FallbackChanged"/><Border x:Name="SmartFallbackInfo" Style="{StaticResource InfoGlyph}" ToolTip="{Binding [Hint_SmartFallback], Source={x:Static loc:Loc.Text}}" ToolTipService.Placement="Bottom"><TextBlock Text="ⓘ" Foreground="#AAAAAA" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></StackPanel>
                                 </StackPanel></Border>
                             </StackPanel>
                             <StackPanel x:Name="DownloadsPage" Visibility="Collapsed">
@@ -132,7 +136,7 @@
                                 <Border Style="{StaticResource Card}"><StackPanel>
                                     <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                         <ComboBox x:Name="SortBox" ItemsSource="{Binding SortOptions}" SelectedValuePath="Field" SelectedValue="{Binding SortBy, Mode=OneWay}" SelectionChanged="SortFieldChanged" AutomationProperties.Name="{Binding [Settings_Sort], Source={x:Static loc:Loc.Text}}"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Text}"/></DataTemplate></ComboBox.ItemTemplate></ComboBox>
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center"><CheckBox x:Name="SortReverse" Content="{Binding [Settings_SortReverse], Source={x:Static loc:Loc.Text}}" IsChecked="{Binding SortReversed, Mode=OneWay}" Checked="SortReverseChanged" Unchecked="SortReverseChanged"/><TextBlock Style="{StaticResource InfoGlyph}" ToolTip="{Binding [Hint_ReverseSort], Source={x:Static loc:Loc.Text}}" ToolTipService.Placement="Right"/></StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center"><CheckBox x:Name="SortReverse" Content="{Binding [Settings_SortReverse], Source={x:Static loc:Loc.Text}}" IsChecked="{Binding SortReversed, Mode=OneWay}" Checked="SortReverseChanged" Unchecked="SortReverseChanged"/><Border Style="{StaticResource InfoGlyph}" ToolTip="{Binding [Hint_ReverseSort], Source={x:Static loc:Loc.Text}}" ToolTipService.Placement="Bottom"><TextBlock Text="ⓘ" Foreground="#AAAAAA" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></StackPanel>
                                     </Grid>
                                     <TextBlock Style="{StaticResource Hint}" Text="{Binding [Settings_SortHint], Source={x:Static loc:Loc.Text}}"/>
                                 </StackPanel></Border>

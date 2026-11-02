@@ -116,7 +116,7 @@
             <!-- Transparent fill rather than none, so the whole row is a click target. -->
             <StackPanel Orientation="Horizontal" Background="Transparent">
                 <Border x:Name="Box" Width="19" Height="19" CornerRadius="4" Background="#2D2D2D" BorderBrush="#575757" BorderThickness="1" VerticalAlignment="Center">
-                    <TextBlock x:Name="Mark" Text="&#xE73E;" FontFamily="Segoe Fluent Icons" FontSize="11" Foreground="#000000" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                    <Path x:Name="Mark" Data="M3,9 L7,13 15,5" Stroke="#17242A" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="16" Height="16" Stretch="None" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
                 </Border>
                 <ContentPresenter Margin="9,0,0,0" VerticalAlignment="Center"/>
             </StackPanel>

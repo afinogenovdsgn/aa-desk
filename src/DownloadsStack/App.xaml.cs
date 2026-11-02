@@ -58,9 +58,11 @@ public partial class App : Application
             await window.InitializeAsync();
             _smartExplorer = new SmartExplorerService(_tray.Source, window.ReportModuleError);
             _smartExplorer.UseLastPath = window.SmartExplorerUseLastPath;
+            _smartExplorer.Hotkey = window.SmartExplorerHotkey;
             _smartExplorer.SetEnabled(window.SmartExplorerEnabled);
             window.SmartExplorerEnabledChanged += _smartExplorer.SetEnabled;
             window.SmartExplorerFallbackChanged += enabled => _smartExplorer.UseLastPath = enabled;
+            window.SmartExplorerHotkeyChanging += _smartExplorer.TrySetHotkey;
             window.OpenSmartPathRequested += _smartExplorer.Open;
             _ = Updates.CheckIfDueAsync();
             if (e.Args.Contains("--show")) window.RestoreList(true);

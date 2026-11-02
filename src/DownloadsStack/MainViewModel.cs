@@ -21,8 +21,10 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
     public bool DownloadsEnabled => _configuration.Modules.Downloads;
     public bool SmartExplorerEnabled => _configuration.Modules.SmartExplorer;
     public bool SmartExplorerUseLastPath => _configuration.Modules.SmartExplorerUseLastPath;
+    public string SmartExplorerHotkey => _configuration.Modules.SmartExplorerHotkey;
     public event Action<bool>? SmartExplorerEnabledChanged;
     public event Action<bool>? SmartExplorerFallbackChanged;
+    public event Func<string, bool>? SmartExplorerHotkeyChanging;
     private DownloadsSnapshot? _pending;
     private bool _dragging, _disposed;
     private string? _error;
@@ -190,7 +192,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
             _startupMessage = string.Join("\n", new[] { settings.Message, indexMessage }.Where(m => m is not null));
             UpdateError();
             _downloads.ApplySources(DownloadsEnabled ? _configuration.Sources : [], _configuration.Order);
-            Changed(nameof(DownloadsEnabled)); Changed(nameof(SmartExplorerEnabled)); Changed(nameof(SmartExplorerUseLastPath));
+            Changed(nameof(DownloadsEnabled)); Changed(nameof(SmartExplorerEnabled)); Changed(nameof(SmartExplorerUseLastPath)); Changed(nameof(SmartExplorerHotkey));
         }
         catch (Exception ex) { LocalLog.Write("Load data", ex); _startupMessage = Loc.T("Error_Settings", ex.Message); UpdateError(); }
     }
@@ -251,6 +253,18 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         _configuration = next;
         Changed(nameof(SmartExplorerUseLastPath));
         SmartExplorerFallbackChanged?.Invoke(enabled);
+    }
+    public async Task SetSmartExplorerHotkeyAsync(string hotkey)
+    {
+        if (hotkey == SmartExplorerHotkey) return;
+        if (!SmartExplorerService.TryParseHotkey(hotkey, out _, out _)) throw new ArgumentException("Unsupported hotkey.", nameof(hotkey));
+        if (SmartExplorerHotkeyChanging?.Invoke(hotkey) == false) throw new InvalidOperationException(Loc.T("Settings_HotkeyUnavailable"));
+        var next = _configuration with { Modules = _configuration.Modules with { SmartExplorerHotkey = hotkey } };
+        try { await _settings.SaveAsync(next); }
+        catch { SmartExplorerHotkeyChanging?.Invoke(SmartExplorerHotkey); throw; }
+        if (_disposed) return;
+        _configuration = next;
+        Changed(nameof(SmartExplorerHotkey));
     }
     public void ReportError(string message) { _reported = message; UpdateError(); }
     /// <summary>

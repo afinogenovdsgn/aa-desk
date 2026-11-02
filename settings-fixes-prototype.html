@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AA Desk — исправления настроек</title>
+<style>
+  :root{color-scheme:dark;--bg:#242424;--rail:#202020;--card:#2a2a2a;--line:#3b3b3b;--text:#ececec;--muted:#a8a8a8;--accent:#58c7e8;--selected:#19495a;--ease:cubic-bezier(.22,1,.36,1)}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:#171717;color:var(--text);font:13px/1.45 "Segoe UI Variable Text","Segoe UI",sans-serif}
+  button{font:inherit}
+  .window{width:min(900px,100vw);height:min(650px,100vh);min-height:520px;display:grid;grid-template-rows:36px minmax(0,1fr) 35px;background:var(--bg);border:1px solid #414141}
+  .titlebar{display:flex;align-items:center;gap:9px;padding:0 12px;background:#303030;border-bottom:1px solid var(--line);font-size:12px}
+  .titlebar img{width:17px;height:17px;object-fit:contain}
+  .shell{display:grid;grid-template-columns:190px minmax(0,1fr);min-height:0}
+  .sidebar{display:flex;flex-direction:column;min-height:0;background:var(--rail);border-right:1px solid var(--line)}
+  .brand{height:104px;flex:none;display:flex;align-items:center;justify-content:center;gap:9px;border-bottom:1px solid var(--line);font-size:16px;font-weight:600}
+  .brand img{width:29px;height:29px;object-fit:contain}
+  .nav{padding:14px 8px;display:flex;flex-direction:column;gap:4px}
+  .eyebrow{margin:0 10px 4px;color:#929292;font-size:10px;letter-spacing:.04em}
+  .nav-button{position:relative;width:100%;height:44px;min-height:44px;display:flex;align-items:center;gap:7px;padding:0 9px;border:1px solid transparent;border-radius:7px;background:transparent;color:#d8d8d8;text-align:left;cursor:pointer;transition:background-color .22s var(--ease),border-color .22s var(--ease),color .22s var(--ease)}
+  .nav-button:hover{background:#303437}
+  .nav-button.active{background:var(--selected);border-color:#247c98;color:#f5fcff}
+  .nav-button:focus-visible,.page-switch:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .nav-icon{width:17px;height:17px;flex:none;color:#9eabb0;transition:color .24s var(--ease)}
+  .nav-button[data-enabled="true"] .nav-icon{color:#58c7e8}
+  .nav-label{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .page-switch{width:43px;height:28px;flex:none;display:grid;place-items:center;border:0;border-radius:99px;background:transparent;cursor:pointer}
+  .switch{width:34px;height:20px;position:relative;border-radius:99px;background:#555d60;border:1px solid #70787b;transition:background-color .24s var(--ease),border-color .24s var(--ease)}
+  .switch::after{content:"";position:absolute;left:2px;top:2px;width:14px;height:14px;border-radius:50%;background:#f3f3f3;box-shadow:0 1px 3px #0006;transition:transform .28s var(--ease),background-color .28s var(--ease)}
+  .page-switch[aria-checked="true"] .switch{background:#1888aa;border-color:#55c7e8}
+  .page-switch[aria-checked="true"] .switch::after{transform:translateX(14px);background:white}
+  .page-switch:active .switch::after{width:16px}
+  .separator{height:1px;background:var(--line);margin:13px 5px 5px}
+  .main{min-width:0;min-height:0;overflow:auto}
+  .content{padding:28px 30px}
+  .content-inner{max-width:610px}
+  .kicker{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8cb5c2}
+  h1{font-size:22px;line-height:1.2;font-weight:600;margin:6px 0 8px}
+  .description{color:var(--muted);margin:0 0 28px;font-size:12px}
+  .section{font-size:11px;letter-spacing:.06em;color:#9eb7bf;margin:25px 0 9px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:8px}
+  .row{min-height:58px;padding:11px 15px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .row+.row{border-top:1px solid var(--line)}
+  .row strong{font-size:12px;font-weight:500}
+  .row small{display:block;color:#999;font-size:11px;margin-top:3px}
+  .label-line{display:flex;align-items:center;gap:8px}
+  .setting-info{position:relative;flex:none;width:13px;height:13px;display:grid;place-items:center;border:1px solid #777;border-radius:50%;color:#999;font-size:9px;line-height:1;cursor:help;outline:none;transition:color .2s var(--ease),border-color .2s var(--ease)}
+  .setting-info:hover,.setting-info:focus-visible{color:#a9e5f5;border-color:#79cde6}
+  .setting-info:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .setting-tooltip{position:absolute;left:-8px;top:calc(100% + 9px);width:230px;padding:10px 12px;border:1px solid #666;border-radius:8px;background:#303030;color:#ededed;box-shadow:0 8px 20px #0006;font-size:12px;font-weight:400;line-height:1.45;white-space:normal;opacity:0;transform:translateY(4px);pointer-events:none;visibility:hidden;transition:opacity .2s var(--ease),transform .24s var(--ease),visibility 0s linear .24s;z-index:5}
+  .setting-info:hover .setting-tooltip,.setting-info:focus-visible .setting-tooltip,.setting-info.preview-hint .setting-tooltip{opacity:1;transform:translateY(0);visibility:visible;transition-delay:0s}
+  .value{flex:none;color:#b7ddeb;font-size:11px}
+  .hotkey{min-width:152px;padding:7px 10px;border:1px solid #626b70;border-radius:6px;background:#303030;color:#f1f1f1;text-align:center;cursor:pointer;transition:border-color .2s var(--ease),background .2s var(--ease)}
+  .hotkey:hover,.hotkey:focus-visible,.hotkey.recording{border-color:var(--accent);background:#35454b;outline:none}
+  .check{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer}
+  .check input{position:absolute;opacity:0;width:20px;height:20px;margin:0}
+  .check-mark{width:19px;height:19px;display:grid;place-items:center;flex:none;border:1px solid #575757;border-radius:4px;background:#2d2d2d;color:#17242a;font-size:13px;line-height:1;transition:background .2s var(--ease),border-color .2s var(--ease)}
+  .check input:checked+.check-mark{background:var(--accent);border-color:var(--accent)}
+  .check input:checked+.check-mark::after{content:'✓'}
+  .check input:focus-visible+.check-mark{outline:2px solid #b4eaff;outline-offset:2px}
+  .setting-info{width:18px;height:18px;z-index:2}
+  .setting-info::before{content:'';position:absolute;inset:-5px}
+  .bottom{display:flex;align-items:center;gap:8px;padding:0 14px;border-top:1px solid var(--line);background:#222;color:#999;font-size:11px}
+  .bottom .update-link{margin-left:auto;padding:3px 0;border:0;background:transparent;color:#bdbdbd;cursor:pointer;transition:color .24s var(--ease)}
+  .bottom .update-link:hover,.bottom .update-link:focus-visible{color:#74d3ee}
+  .bottom .update-link[aria-busy="true"]{color:#e2eef2;cursor:default}
+  .bottom .update-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .status-dot{width:6px;height:6px;border-radius:50%;background:#58c7e8}
+  .version{color:#9dcfe0}
+  @media(max-width:620px){.shell{grid-template-columns:170px minmax(0,1fr)}.content{padding:23px 18px}.brand{height:84px}}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:0ms!important;animation-duration:0ms!important}}
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar"><img src="src/DownloadsStack/Assets/aa-desk.svg" alt=""><span>AA Desk</span></div>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Навигация">
+      <div class="brand"><img src="src/DownloadsStack/Assets/aa-desk.svg" alt="">AA Desk</div>
+      <nav class="nav" aria-label="Модули AA Desk">
+        <div class="eyebrow">Модули AA Desk</div>
+        <button class="nav-button active" type="button" id="general" aria-current="page"><svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3.5 5.5h13M3.5 10h13M3.5 14.5h13"/></svg><span class="nav-label">Общие</span></button>
+        <button class="nav-button" type="button" id="smart" data-enabled="true"><svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5h6l1.5 2h7.5v8.5h-15z"/><path d="m10 9.5 2 2-2 2m-2-2h4"/></svg><span class="nav-label">Smart Explorer</span></button>
+        <button class="nav-button" type="button" id="downloads" data-enabled="true"><svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2.5v9m-3-3 3 3 3-3M3 12.5v4h14v-4"/></svg><span class="nav-label">Список загрузок</span></button>
+        <div class="separator"></div>
+        <div class="eyebrow">Приложение</div>
+        <button class="nav-button" type="button" id="about"><svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 9v5m0-8v1"/></svg><span class="nav-label">О программе</span></button>
+      </nav>
+    </aside>
+    <main class="main">
+      <div class="content"><div class="content-inner" id="panel" aria-live="polite"></div></div>
+    </main>
+  </div>
+  <div class="bottom"><span>AA Desk</span><button class="update-link" id="check-updates" type="button" title="В HTML-прототипе показано только поведение кнопки">Проверить наличие обновлений</button><span class="status-dot" aria-hidden="true"></span><span class="version">v0.1.4</span></div>
+</div>
+<script>
+  const panel=document.querySelector('#panel');
+  const enabled={smart:true,downloads:true};
+  let hotkey='Win + Shift + E', useLastPath=true;
+  const moduleControl=(key,label)=>`<div class="section">СОСТОЯНИЕ МОДУЛЯ</div><div class="card"><div class="row"><div><strong>${label}</strong><small class="module-state">${enabled[key]?'Включён':'Выключен'}</small></div><button class="page-switch" type="button" role="switch" data-toggle="${key}" aria-label="Включить ${label}" aria-checked="${enabled[key]}"><span class="switch" aria-hidden="true"></span></button></div></div>`;
+  const pages={
+    general:()=>`<div class="kicker">НАСТРОЙКИ</div><h1>Общие</h1><p class="description">Выбери инструмент слева, чтобы открыть его настройки. Включение и выключение находится внутри вкладки каждого модуля.</p><div class="section">МОДУЛИ</div><div class="card"><div class="row"><div><strong>Smart Explorer</strong><small>Открывает путь из буфера обмена по Win + Shift + E</small></div><span class="value">Win + Shift + E</span></div><div class="row"><div><strong>Список загрузок</strong><small>Быстрый доступ к выбранным папкам через трей</small></div><span class="value">Трей</span></div></div>`,
+    smart:()=>`<div class="kicker">МОДУЛЬ</div><h1>Smart Explorer</h1><p class="description">Открывает путь из буфера обмена в Проводнике.</p>${moduleControl('smart','Smart Explorer')}<div class="section">ПОВЕДЕНИЕ</div><div class="card"><div class="row"><div><strong>Быстрая команда</strong><small>Нажмите на сочетание и задайте новое</small></div><button class="hotkey" type="button" aria-label="Настроить быструю команду">${hotkey}</button></div><div class="row"><div class="label-line"><label class="check"><input type="checkbox" ${useLastPath?'checked':''} id="use-last-path"><span class="check-mark" aria-hidden="true"></span><strong>Если в буфере нет пути, открыть последний путь</strong></label><span class="setting-info" tabindex="0" role="button" aria-label="Подсказка о последнем пути">i<span class="setting-tooltip">Если в буфере нет пути, Smart Explorer использует последний успешно открытый путь.</span></span></div></div></div>`,
+    downloads:()=>`<div class="kicker">МОДУЛЬ</div><h1>Список загрузок</h1><p class="description">Папки, файлы и сортировка списка в трее.</p>${moduleControl('downloads','Список загрузок')}<div class="section">ИСТОЧНИКИ</div><div class="card"><div class="row"><div><div class="label-line"><strong>Папки</strong><span class="setting-info" tabindex="0" aria-label="Выбранные папки определяют содержимое списка в трее">i<span class="setting-tooltip">В списке в трее появляются файлы из добавленных папок.</span></span></div><small>Добавляй нужные расположения в список</small></div><span class="value">Настройка модуля</span></div><div class="row"><div><div class="label-line"><strong>Сортировка</strong><span class="setting-info" tabindex="0" aria-label="Определяет порядок файлов в списке загрузок">i<span class="setting-tooltip">Определяет порядок файлов в списке; отдельно можно включить обратный порядок.</span></span></div><small>Порядок файлов в списке</small></div><span class="value">Настройка модуля</span></div></div>`,
+    about:()=>`<div class="kicker">ПРИЛОЖЕНИЕ</div><h1>О программе</h1><p class="description">AA Desk объединяет инструменты в одном трее.</p>`
+  };
+  let current='general';
+  function show(page){
+    current=page;
+    document.querySelectorAll('.nav-button').forEach(button=>{
+      const selected=button.id===page;
+      button.classList.toggle('active',selected);
+      if(selected)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');
+    });
+    panel.innerHTML=pages[page]();
+    panel.querySelector('.page-switch')?.addEventListener('click',event=>{
+      const button=event.currentTarget;
+      const key=button.dataset.toggle;
+      enabled[key]=!enabled[key];
+      button.setAttribute('aria-checked',String(enabled[key]));
+      panel.querySelector('.module-state').textContent=enabled[key]?'Включён':'Выключен';
+      document.querySelector('#'+key).dataset.enabled=String(enabled[key]);
+    });
+    panel.querySelector('#use-last-path')?.addEventListener('change',event=>useLastPath=event.target.checked);
+    const hotkeyButton=panel.querySelector('.hotkey');
+    hotkeyButton?.addEventListener('click',()=>{hotkeyButton.classList.add('recording');hotkeyButton.textContent='Нажмите сочетание…';hotkeyButton.focus()});
+    hotkeyButton?.addEventListener('keydown',event=>{
+      if(!hotkeyButton.classList.contains('recording'))return;
+      event.preventDefault();event.stopPropagation();
+      if(event.key==='Escape'){hotkeyButton.textContent=hotkey;hotkeyButton.classList.remove('recording');return}
+      if(['Shift','Control','Alt','Meta'].includes(event.key))return;
+      const parts=[event.metaKey&&'Win',event.ctrlKey&&'Ctrl',event.altKey&&'Alt',event.shiftKey&&'Shift'].filter(Boolean);
+      if(!parts.length){hotkeyButton.textContent='Добавьте модификатор';return}
+      hotkey=[...parts,event.key.length===1?event.key.toUpperCase():event.key].join(' + ');
+      hotkeyButton.textContent=hotkey;hotkeyButton.classList.remove('recording');
+    });
+    if(!matchMedia('(prefers-reduced-motion: reduce)').matches)panel.animate([{opacity:0,transform:'translateY(7px)'},{opacity:1,transform:'translateY(0)'}],{duration:300,easing:'cubic-bezier(.22,1,.36,1)'});
+  }
+  document.querySelectorAll('.nav-button').forEach(button=>button.addEventListener('click',()=>show(button.id)));
+  const updateButton=document.querySelector('#check-updates');
+  updateButton.addEventListener('click',()=>{
+    if(updateButton.getAttribute('aria-busy')==='true')return;
+    updateButton.setAttribute('aria-busy','true');
+    updateButton.textContent='Проверить наличие обновлений…';
+    setTimeout(()=>{
+      updateButton.textContent='Обновление не требуется';
+      updateButton.removeAttribute('aria-busy');
+    },900);
+  });
+  show(Object.hasOwn(pages,location.hash.slice(1))?location.hash.slice(1):current);
+  const hintPreview=new URLSearchParams(location.search).get('hint');
+  if(hintPreview!==null)panel.querySelectorAll('.setting-info')[Number(hintPreview)]?.classList.add('preview-hint');
+</script>
+</body>
+</html>

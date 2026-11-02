@@ -56,6 +56,7 @@ public sealed record ModuleSettings
     public bool Downloads { get; init; } = true;
     public bool SmartExplorer { get; init; } = true;
     public bool SmartExplorerUseLastPath { get; init; } = true;
+    public string SmartExplorerHotkey { get; init; } = "Win+Shift+E";
 }
 
 /// <summary>What the list is sorted by. The first value is the order the application had before the choice existed.</summary>

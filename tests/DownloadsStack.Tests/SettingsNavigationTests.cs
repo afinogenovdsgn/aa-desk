@@ -31,8 +31,14 @@ public sealed class SettingsNavigationTests
                 window.Show();
                 Assert.Equal(Visibility.Visible, Page(window, "General"));
                 Navigate(window, "Smart");
+                window.UpdateLayout();
                 Assert.Equal(Visibility.Visible, Page(window, "Smart"));
                 Assert.Equal(Visibility.Collapsed, Page(window, "General"));
+                Assert.Equal("Win+Shift+E", ((Button)window.FindName("SmartHotkeyButton")).Content);
+                Assert.True(((CheckBox)window.FindName("SmartExplorerFallback")).IsChecked);
+                var info = (Border)window.FindName("SmartFallbackInfo");
+                Assert.True(info.ActualWidth >= 20);
+                Assert.Contains("последний", (string)ToolTipService.GetToolTip(info));
                 Navigate(window, "Downloads");
                 Assert.Equal(Visibility.Visible, Page(window, "Downloads"));
                 Navigate(window, "About");
@@ -44,7 +50,7 @@ public sealed class SettingsNavigationTests
         });
         thread.SetApartmentState(ApartmentState.STA);
         thread.Start(); thread.Join();
-        if (error is not null) throw error;
+        if (error is not null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(error).Throw();
     }
     private static Visibility Page(SettingsWindow window, string name) =>
         ((StackPanel)window.FindName(name + "Page")).Visibility;

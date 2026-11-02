@@ -30,6 +30,8 @@ public sealed class SettingsStore
                 if (data.BackdropOpacity is < 0 or > 100) data = data with { BackdropOpacity = Math.Clamp(data.BackdropOpacity, 0, 100) };
                 if (data.MaxVisibleItems < SettingsData.MinVisibleItems || data.MaxVisibleItems > SettingsData.MaxVisibleItemsLimit)
                     data = data with { MaxVisibleItems = Math.Clamp(data.MaxVisibleItems, SettingsData.MinVisibleItems, SettingsData.MaxVisibleItemsLimit) };
+                if (!SmartExplorerService.TryParseHotkey(data.Modules.SmartExplorerHotkey, out _, out _))
+                    data = data with { Modules = data.Modules with { SmartExplorerHotkey = "Win+Shift+E" } };
                 return (Data: data, Message: (string?)null, Save: false);
             }
             catch (Exception ex) when (ex is JsonException or NotSupportedException or ArgumentException)
